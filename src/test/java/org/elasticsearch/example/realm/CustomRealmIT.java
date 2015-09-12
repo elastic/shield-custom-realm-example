@@ -29,16 +29,12 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.shield.ShieldPlugin;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.rest.client.http.HttpResponse;
 import org.junit.Test;
-
-import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 
@@ -61,16 +57,8 @@ public class CustomRealmIT extends ESIntegTestCase {
         return Settings.builder()
                 .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
                 .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                .put("plugin.types", ShieldPlugin.class.getName())
                 .build();
-    }
-
-    /**
-     * The plugins to load for the transport client. Shield must be loaded for the client in order to communicate with
-     * a cluster protected by Shield.
-     */
-    @Override
-    protected Collection<Class<? extends Plugin>> transportClientPlugins() {
-        return Collections.<Class<? extends Plugin>>singleton(ShieldPlugin.class);
     }
 
     @Test
@@ -102,8 +90,9 @@ public class CustomRealmIT extends ESIntegTestCase {
                 .put("cluster.name", clusterName)
                 .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
                 .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                .put("plugin.types", ShieldPlugin.class.getName())
                 .build();
-        try (TransportClient client = TransportClient.builder().settings(settings).addPlugin(ShieldPlugin.class).build()) {
+        try (TransportClient client = TransportClient.builder().settings(settings).build()) {
             client.addTransportAddress(publishAddress);
             ClusterHealthResponse response = client.admin().cluster().prepareHealth().execute().actionGet();
             assertThat(response.isTimedOut(), is(false));
@@ -124,16 +113,18 @@ public class CustomRealmIT extends ESIntegTestCase {
                     .put("cluster.name", clusterName)
                     .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS) + randomAsciiOfLength(1))
                     .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                    .put("plugin.types", ShieldPlugin.class.getName())
                     .build();
         } else {
             settings = Settings.builder()
                     .put("cluster.name", clusterName)
                     .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
                     .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, randomAsciiOfLengthBetween(16, 32))
+                    .put("plugin.types", ShieldPlugin.class.getName())
                     .build();
         }
 
-        try (TransportClient client = TransportClient.builder().addPlugin(ShieldPlugin.class).settings(settings).build()) {
+        try (TransportClient client = TransportClient.builder().settings(settings).build()) {
             client.addTransportAddress(publishAddress);
             client.admin().cluster().prepareHealth().execute().actionGet();
             fail("authentication failure should have resulted in a NoNodesAvailableException");
