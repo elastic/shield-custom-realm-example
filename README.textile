@@ -1,0 +1,26 @@
+h1. Example of Custom Realm Plugin for Elasticsearch Shield
+
+h2. Introduction
+
+p. This plugin contains an example "custom realm":https://www.elastic.co/guide/en/shield/2.0.0-beta2/custom-realms.html for Shield.
+
+p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing the plugin for.
+
+|_. Example Plugin Branch |_.  Elasticsearch   |
+| "master":https://github.com/jaymode/shield-custom-realm-example                          | 3.0.0 and above  |
+| "2.x":https://github.com/jaymode/shield-custom-realm-example/tree/2.x                    | 2.1.x  |
+| "2.0":https://github.com/jaymode/shield-custom-realm-example/tree/2.0                    | 2.0.x  |
+
+h2. Creating Elasticsearch Plugin
+
+p. A custom realm must be packaged using a standard Elasticsearch plugin. An Elasticsearch plugin can be written in java and built using maven. "More information":https://www.elastic.co/guide/en/elasticsearch/plugins/2.0/index.html can be found in the Elasticsearch documentation.
+
+p. In most cases, taking this project and modifying the structure should allow you get to quickly start developing your own custom realm for Elasticsearch Shield.
+
+h2. Building and Testing the Plugin
+
+p. Checkout the branch that matches the latest officially released version of Shield and run @mvn clean verify@. This will compile the plugin, run unit tests, package the plugin, download elasticsearch and install the created plugin, and run tests against a cluster running this plugin.
+
+h2. Integration Points with Shield
+
+p. This plugin shows an example and documents the two integrations points with Shield. These are the ability to define one or more custom realms and the ability to define a single custom authentication failure handler to control the challenges sent to the user as part of the authentication process. These classes have lots of code comments documenting their functionality.
