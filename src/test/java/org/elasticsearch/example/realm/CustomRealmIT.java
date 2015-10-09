@@ -19,7 +19,6 @@
 
 package org.elasticsearch.example.realm;
 
-import com.google.common.base.Charsets;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
@@ -29,7 +28,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.plugins.Plugin;
@@ -38,6 +36,7 @@ import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.rest.client.http.HttpResponse;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.hamcrest.Matchers.*;
@@ -150,7 +149,7 @@ public class CustomRealmIT extends ESIntegTestCase {
                 .execute();
         assertThat(response.getStatusCode(), is(200));
 
-        XContentParser parser = JsonXContent.jsonXContent.createParser(response.getBody().getBytes(Charsets.UTF_8));
+        XContentParser parser = JsonXContent.jsonXContent.createParser(response.getBody().getBytes(StandardCharsets.UTF_8));
         XContentParser.Token token;
         Settings settings = null;
         while ((token = parser.nextToken()) != null) {
