@@ -34,6 +34,12 @@ import org.elasticsearch.transport.TransportMessage;
  * This class extends the {@link DefaultAuthenticationFailureHandler} provided by Shield and changes the
  * <code>WWW-Authenticate</code> header to return a custom challenge for demonstration purposes. The default return
  * value is a 401 status with a Basic authentication challenge.
+ *
+ * Other implementations may choose to simply implement the {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}
+ * interface and construct the {@link ElasticsearchSecurityException} instances in the methods with the appropriate
+ * {@link org.elasticsearch.rest.RestStatus} and headers. One example is for a realm that will integrate with a single
+ * sign on service as in most cases these realms will need to redirect with a {@link org.elasticsearch.rest.RestStatus#FOUND}
+ * and <code>Location</code> header with the URL to the SSO login page.
  */
 public class CustomAuthenticationFailureHandler extends DefaultAuthenticationFailureHandler {
 
