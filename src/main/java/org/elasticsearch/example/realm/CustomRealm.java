@@ -68,6 +68,17 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
     }
 
     /**
+     * This constructor should be used by extending classes so that they can specify their own specific type
+     * @param type the type of the realm
+     * @param config the configuration specific to this realm
+     */
+    protected CustomRealm(String type, RealmConfig config) {
+        super(TYPE, config);
+        // load all user data into a map for easy access - NOT SECURE!
+        this.usersMap = parseUsersMap(config.settings());
+    }
+
+    /**
      * Indicates whether this realm supports the given token. This realm only support {@link UsernamePasswordToken} objects
      * for authentication
      * @param token the token to test for support

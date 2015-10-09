@@ -19,15 +19,13 @@
 
 package org.elasticsearch.example;
 
-import org.elasticsearch.example.realm.CustomAuthenticationFailureHandler;
-import org.elasticsearch.example.realm.CustomRealm;
-import org.elasticsearch.example.realm.CustomRealmFactory;
+import org.elasticsearch.example.realm.*;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.shield.authc.AuthenticationModule;
 
 /**
  * The plugin class that serves as the integration point between Elasticsearch, Shield, and the custom realm that is
- * provided by this plugin. The most important method in this class is the {@see CustomRealmExamplePlugin#onModule}
+ * provided by this plugin. The most important method in this class is the {@link CustomRealmExamplePlugin#onModule}
  * method, which registers the custom {@link org.elasticsearch.shield.authc.Realm} and
  * {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}.
  */
@@ -63,6 +61,9 @@ public class CustomRealmExamplePlugin extends Plugin {
          * of this type that is defined in the elasticsearch settings.
          */
         authenticationModule.addCustomRealm(CustomRealm.TYPE, CustomRealmFactory.class);
+
+        // register the custom caching realm with a separate call
+        authenticationModule.addCustomRealm(CustomCachingRealm.TYPE, CustomCachingRealmFactory.class);
 
         /*
          * Register the custom authentication failure handler. Note only one implementation of a failure handler can
