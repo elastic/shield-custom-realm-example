@@ -22,6 +22,29 @@ h2. Building and Testing the Plugin
 
 p. Checkout the branch that matches the latest officially released version of Shield and run @mvn clean verify@. This will compile the plugin, run unit tests, package the plugin, download elasticsearch and install the created plugin, and run tests against a cluster running this plugin.
 
+h3. Example Configuration
+
+p. In the @elasticsearch.yml@ file you will define a realm as specified in the Shield documentation. An example of this configuration would be:
+
+bc.. shield:
+  authc:
+    realms:
+      custom:
+        type: custom
+        order: 0
+        users:
+          john:
+            password: changeme
+            roles: user,marvel_user
+          jane:
+            password: changeme
+            roles: admin
+      esusers:
+        type: esusers
+        order: 1
+
+p. In the above example, a @custom@ realm is configured alongside an @esusers@ realm. The users for the custom realm are specified in the configuration along with their roles.
+
 h2. Integration Points with Shield
 
 p. This plugin shows an example and documents the two integrations points with Shield. These are the ability to define one or more custom realms and the ability to define a single custom authentication failure handler to control the challenges sent to the user as part of the authentication process. These classes have lots of code comments documenting their functionality.
