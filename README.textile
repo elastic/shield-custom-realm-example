@@ -2,7 +2,7 @@ h1. Example of Custom Realm Plugin for Elasticsearch Shield
 
 h2. Introduction
 
-p. This plugin contains an example "custom realm":https://www.elastic.co/guide/en/shield/2.0.0-beta2/custom-realms.html for Shield.
+p. This plugin contains an example "custom realm":https://www.elastic.co/guide/en/shield/current/custom-realms.html for Shield.
 
 p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing the plugin for.
 
