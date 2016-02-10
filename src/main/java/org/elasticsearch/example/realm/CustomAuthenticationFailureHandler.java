@@ -62,17 +62,15 @@ public class CustomAuthenticationFailureHandler extends DefaultAuthenticationFai
     @Override
     public ElasticsearchSecurityException missingToken(RestRequest request) {
         ElasticsearchSecurityException e = super.missingToken(request);
-        // set a custom header
-        e.addHeader("WWW-Authenticate", "custom-challenge");
-        return e;
+
+        return missingToken(e, false);
     }
 
     @Override
     public ElasticsearchSecurityException missingToken(TransportMessage message, String action) {
         ElasticsearchSecurityException e = super.missingToken(message, action);
-        // set a custom header
-        e.addHeader("WWW-Authenticate", "custom-challenge");
-        return e;
+
+        return missingToken(e, false);
     }
 
     @Override
@@ -97,5 +95,37 @@ public class CustomAuthenticationFailureHandler extends DefaultAuthenticationFai
         // set a custom header
         se.addHeader("WWW-Authenticate", "custom-challenge");
         return se;
+    }
+
+    /**
+     * Allows you to allow the internal realms (or even other custom realms)
+     * to challenge along with your own custom challenge.
+     *
+     * @param e The parent exception
+     * @param useInternalRealms {@code false} to only use the custom challange
+     *                          {@code true} to use both the custom challenge
+     *                          and any existing challenges
+     * @return Never {@code null}. {@code e} modified to add the custom challenge.
+     */
+    private ElasticsearchSecurityException missingToken(ElasticsearchSecurityException e, boolean useInternalRealms) {
+        // This boolean exists to show two different approaches. You could
+        // remove it in your custom realm and just statically choose one
+        // approach versus the other
+        if (useInternalRealms == false) {
+            // set a custom header
+            e.addHeader("WWW-Authenticate", "custom-challenge");
+        // allows other internal realms to also submit a challenge:
+        } else {
+            // check for existing header and add our custom one
+            List<String> existingHeader = e.getHeader("WWW-Authenticate");
+
+            // if it's undefined, then we need to create the header
+            if (existingHeader == null) {
+                existingHeader = new ArrayList<>(1);
+                e.addHeader("WWW-Authenticate", existingHeader);
+            }
+
+            existingHeader.add("custom-challenge");
+        }
     }
 }
