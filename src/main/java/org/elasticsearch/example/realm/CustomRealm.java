@@ -140,7 +140,7 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
         final InfoHolder info = usersMap.get(actualUser);
 
         if (info != null && SecuredString.constantTimeEquals(token.credentials(), info.password)) {
-            return new User.Simple(actualUser, info.roles);
+            return new User(actualUser, info.roles);
         }
         return null;
     }
@@ -155,7 +155,7 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
     public User lookupUser(String username) {
         InfoHolder info = usersMap.get(username);
         if (info != null) {
-            return new User.Simple(username, info.roles);
+            return new User(username, info.roles);
         }
         return null;
     }
