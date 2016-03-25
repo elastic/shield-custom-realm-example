@@ -2,13 +2,16 @@ h1. Example of Custom Realm Plugin for Elasticsearch Shield
 
 h2. Introduction
 
-p. This plugin contains an example "custom realm":https://www.elastic.co/guide/en/shield/2.0.0-beta2/custom-realms.html for Shield.
+p. This plugin contains an example "custom realm":https://www.elastic.co/guide/en/shield/current/custom-realms.html for Shield.
 
 p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing the plugin for.
 
 |_. Example Plugin Branch |_.  Elasticsearch   |
-| "master":https://github.com/elastic/shield-custom-realm-example                          | 3.0.0 and above  |
-| "2.x":https://github.com/elastic/shield-custom-realm-example/tree/2.x                    | 2.1.x  |
+| "master":https://github.com/elastic/shield-custom-realm-example                          | 5.0.0 and above  |
+| "2.x":https://github.com/elastic/shield-custom-realm-example/tree/2.x                    | 2.4.x  |
+| "2.3":https://github.com/elastic/shield-custom-realm-example/tree/2.3                    | 2.3.x  |
+| "2.2":https://github.com/elastic/shield-custom-realm-example/tree/2.2                    | 2.2.x  |
+| "2.1":https://github.com/elastic/shield-custom-realm-example/tree/2.1                    | 2.1.x  |
 | "2.0":https://github.com/elastic/shield-custom-realm-example/tree/2.0                    | 2.0.x  |
 
 h2. Creating Elasticsearch Plugin
