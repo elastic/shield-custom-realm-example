@@ -20,21 +20,24 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.shield.User;
+import org.elasticsearch.shield.user.User;
 import org.elasticsearch.shield.authc.RealmConfig;
 import org.elasticsearch.shield.authc.support.SecuredString;
 import org.elasticsearch.shield.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
-import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 /**
  * Unit tests for the CustomCachingRealm
  */
 public class CustomCachingRealmTests extends ESTestCase {
 
-    @Test
     public void testAuthenticateWithCachedValue() {
         //setup
         Settings globalSettings = Settings.builder().put("path.home", createTempDir()).build();

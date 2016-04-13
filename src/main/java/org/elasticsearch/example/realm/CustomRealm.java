@@ -21,14 +21,14 @@ package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.shield.User;
+import org.elasticsearch.shield.user.User;
 import org.elasticsearch.shield.authc.AuthenticationToken;
 import org.elasticsearch.shield.authc.Realm;
 import org.elasticsearch.shield.authc.RealmConfig;
 import org.elasticsearch.shield.authc.support.SecuredString;
 import org.elasticsearch.shield.authc.support.UsernamePasswordToken;
-import org.elasticsearch.transport.TransportMessage;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,33 +93,14 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
      * This method will extract a token from the given {@link RestRequest} if possible. This implementation of token
      * extraction looks for two headers, the <code>User</code> header for the username and the <code>Password</code>
      * header for the plaintext password
-     * @param request the rest request to extract a token from
+     * @param threadContext the {@link ThreadContext} that contains headers and transient objects for a request
      * @return the {@link AuthenticationToken} if possible to extract or <code>null</code>
      */
     @Override
-    public UsernamePasswordToken token(RestRequest request) {
-        String user = request.header(USER_HEADER);
+    public UsernamePasswordToken token(ThreadContext threadContext) {
+        String user = threadContext.getHeader(USER_HEADER);
         if (user != null) {
-            String password = request.header(PW_HEADER);
-            if (password != null) {
-                return new UsernamePasswordToken(user, new SecuredString(password.toCharArray()));
-            }
-        }
-        return null;
-    }
-
-    /**
-     * This method will extract a token from the given {@link TransportMessage} if possible. This implementation of token
-     * extraction looks for two headers, the <code>User</code> header for the username and the <code>Password</code>
-     * header for the plaintext password
-     * @param message the message to extract the token from
-     * @return the {@link AuthenticationToken} if possible to extract or <code>null</code>
-     */
-    @Override
-    public UsernamePasswordToken token(TransportMessage<?> message) {
-        String user = message.getHeader(USER_HEADER);
-        if (user != null) {
-            String password = message.getHeader(PW_HEADER);
+            String password = threadContext.getHeader(PW_HEADER);
             if (password != null) {
                 return new UsernamePasswordToken(user, new SecuredString(password.toCharArray()));
             }
@@ -140,7 +121,7 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
         final InfoHolder info = usersMap.get(actualUser);
 
         if (info != null && SecuredString.constantTimeEquals(token.credentials(), info.password)) {
-            return new User.Simple(actualUser, info.roles);
+            return new User(actualUser, info.roles);
         }
         return null;
     }
@@ -155,14 +136,14 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
     public User lookupUser(String username) {
         InfoHolder info = usersMap.get(username);
         if (info != null) {
-            return new User.Simple(username, info.roles);
+            return new User(username, info.roles);
         }
         return null;
     }
 
     /**
      * This method indicates whether this realm supports user lookup or not. User lookup is used for the run as functionality
-     * found in Shield.
+     * found in X-Pack.
      * @return true if lookup is supported, false otherwise
      */
     @Override

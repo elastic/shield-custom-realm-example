@@ -31,7 +31,7 @@ import org.elasticsearch.transport.TransportMessage;
  * be able to handle an authentication failure. These methods can be called when there is a missing token, failure
  * to authenticate an extracted token, or when an exception occurs processing a request.
  *
- * This class extends the {@link DefaultAuthenticationFailureHandler} provided by Shield and changes the
+ * This class extends the {@link DefaultAuthenticationFailureHandler} provided by X-Pack and changes the
  * <code>WWW-Authenticate</code> header to return a custom challenge for demonstration purposes. The default return
  * value is a 401 status with a Basic authentication challenge.
  *

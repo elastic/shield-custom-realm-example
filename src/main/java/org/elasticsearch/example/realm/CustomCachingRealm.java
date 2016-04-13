@@ -19,7 +19,7 @@
 
 package org.elasticsearch.example.realm;
 
-import org.elasticsearch.shield.User;
+import org.elasticsearch.shield.user.User;
 import org.elasticsearch.shield.authc.RealmConfig;
 import org.elasticsearch.shield.authc.support.CachingRealm;
 import org.elasticsearch.shield.authc.support.SecuredString;
@@ -29,9 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A custom implementation of a {@link CachingRealm} that shows what is necessary to integrate with the Shield cache
+ * A custom implementation of a {@link CachingRealm} that shows what is necessary to integrate with the X-Pack cache
  * eviction APIs. A realm may need to cache data for performance reasons and if the cached data is changed in an external
- * system, the cache may need to be expired. By implementing the {@link CachingRealm} interface, the Shield cache eviction
+ * system, the cache may need to be expired. By implementing the {@link CachingRealm} interface, the X-Pack cache eviction
  * API can be used to clear a user or the entire cache.
  *
  * This class merely extends the existing {@link CustomRealm} and implements a cache on top of the realm with a regular

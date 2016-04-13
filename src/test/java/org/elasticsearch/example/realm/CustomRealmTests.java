@@ -20,21 +20,22 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.shield.User;
+import org.elasticsearch.shield.user.User;
 import org.elasticsearch.shield.authc.RealmConfig;
 import org.elasticsearch.shield.authc.support.SecuredString;
 import org.elasticsearch.shield.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
-import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * Basic unit tests for the CustomRealm
  */
 public class CustomRealmTests extends ESTestCase {
 
-    @Test
     public void testAuthenticate() {
         //setup
         Settings globalSettings = Settings.builder().put("path.home", createTempDir()).build();
@@ -62,7 +63,6 @@ public class CustomRealmTests extends ESTestCase {
         assertThat(user.principal(), equalTo("jane"));
     }
 
-    @Test
     public void testAuthenticateBadUser() {
         Settings globalSettings = Settings.builder().put("path.home", createTempDir()).build();
         Settings realmSettings = Settings.builder()
@@ -74,7 +74,8 @@ public class CustomRealmTests extends ESTestCase {
                 .build();
 
         CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings));
-        UsernamePasswordToken token = new UsernamePasswordToken("john1", new SecuredString(randomAsciiOfLengthBetween(4, 16).toCharArray()));
+        UsernamePasswordToken token =
+                new UsernamePasswordToken("john1", new SecuredString(randomAsciiOfLengthBetween(4, 16).toCharArray()));
         User user = realm.authenticate(token);
         assertThat(user, nullValue());
     }

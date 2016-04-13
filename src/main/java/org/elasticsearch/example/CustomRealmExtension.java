@@ -19,17 +19,21 @@
 
 package org.elasticsearch.example;
 
-import org.elasticsearch.example.realm.*;
-import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.example.realm.CustomAuthenticationFailureHandler;
+import org.elasticsearch.example.realm.CustomCachingRealm;
+import org.elasticsearch.example.realm.CustomCachingRealmFactory;
+import org.elasticsearch.example.realm.CustomRealm;
+import org.elasticsearch.example.realm.CustomRealmFactory;
 import org.elasticsearch.shield.authc.AuthenticationModule;
+import org.elasticsearch.xpack.extensions.XPackExtension;
 
 /**
- * The plugin class that serves as the integration point between Elasticsearch, Shield, and the custom realm that is
- * provided by this plugin. The most important method in this class is the {@link CustomRealmExamplePlugin#onModule}
+ * The extension class that serves as the integration point between Elasticsearch, X-Pack, and the custom realm that is
+ * provided by this extension. The most important method in this class is the {@link CustomRealmExtension#onModule}
  * method, which registers the custom {@link org.elasticsearch.shield.authc.Realm} and
  * {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}.
  */
-public class CustomRealmExamplePlugin extends Plugin {
+public class CustomRealmExtension extends XPackExtension {
 
     @Override
     public String name() {
@@ -42,20 +46,20 @@ public class CustomRealmExamplePlugin extends Plugin {
     }
 
     /**
-     * Registers the custom authentication classes with the Shield AuthenticationModule. This method is very important;
-     * without a proper implementation, Shield will not be able to locate your custom realm.
+     * Registers the custom authentication classes with the X-Pack AuthenticationModule. This method is very important;
+     * without a proper implementation, X-Pack will not be able to locate your custom realm.
      *
-     * This method is called by the Elasticsearch plugin framework and allows for custom interaction with the modules. In
+     * This method is called by the X-Pack extension framework and allows for custom interaction with the modules. In
      * this method, one or more custom realms can be registered and a custom authentication failure handler can also be
      * registered.
      *
-     * @param authenticationModule the Shield AuthenticationModule
+     * @param authenticationModule the X-Pack AuthenticationModule
      */
     public void onModule(AuthenticationModule authenticationModule) {
         /*
          * Registers the custom realm. The first parameter is the String representation of a realm type; this is the
          * value that is specified when declaring a realm in the settings. Note, the realm type cannot be one of the
-         * types defined by Shield. In order to avoid a conflict, you may wish to use some prefix to your realm types.
+         * types defined by X-Pack. In order to avoid a conflict, you may wish to use some prefix to your realm types.
          *
          * The second parameter is the Realm.Factory implementation. This factory class will be used to create any realm
          * of this type that is defined in the elasticsearch settings.

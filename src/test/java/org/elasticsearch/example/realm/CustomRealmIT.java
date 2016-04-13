@@ -22,24 +22,25 @@ package org.elasticsearch.example.realm;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
-import org.elasticsearch.client.support.Headers;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.plugins.Plugin;
-import org.elasticsearch.shield.ShieldPlugin;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.rest.client.http.HttpResponse;
-import org.junit.Test;
+import org.elasticsearch.xpack.XPackPlugin;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Integration test to test authentication with the custom realm. This test is run against an external cluster that is launched
@@ -58,8 +59,8 @@ public class CustomRealmIT extends ESIntegTestCase {
     @Override
     protected Settings externalClusterClientSettings() {
         return Settings.builder()
-                .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
+                .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
                 .build();
     }
 
@@ -69,10 +70,9 @@ public class CustomRealmIT extends ESIntegTestCase {
      */
     @Override
     protected Collection<Class<? extends Plugin>> transportClientPlugins() {
-        return Collections.<Class<? extends Plugin>>singleton(ShieldPlugin.class);
+        return Collections.<Class<? extends Plugin>>singleton(XPackPlugin.class);
     }
 
-    @Test
     public void testHttpConnectionWithNoAuthentication() throws Exception {
         HttpResponse response = httpClient().path("/").execute();
         assertThat(response.getStatusCode(), is(401));
@@ -80,7 +80,6 @@ public class CustomRealmIT extends ESIntegTestCase {
         assertThat(value, is("custom-challenge"));
     }
 
-    @Test
     public void testHttpAuthentication() throws Exception {
         HttpResponse response = httpClient().path("/")
                 .addHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
@@ -89,7 +88,6 @@ public class CustomRealmIT extends ESIntegTestCase {
         assertThat(response.getStatusCode(), is(200));
     }
 
-    @Test
     public void testTransportClient() throws Exception {
         NodesInfoResponse nodeInfos = client().admin().cluster().prepareNodesInfo().get();
         NodeInfo[] nodes = nodeInfos.getNodes();
@@ -99,17 +97,16 @@ public class CustomRealmIT extends ESIntegTestCase {
 
         Settings settings = Settings.builder()
                 .put("cluster.name", clusterName)
-                .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
+                .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
                 .build();
-        try (TransportClient client = TransportClient.builder().settings(settings).addPlugin(ShieldPlugin.class).build()) {
+        try (TransportClient client = TransportClient.builder().settings(settings).addPlugin(XPackPlugin.class).build()) {
             client.addTransportAddress(publishAddress);
             ClusterHealthResponse response = client.admin().cluster().prepareHealth().execute().actionGet();
             assertThat(response.isTimedOut(), is(false));
         }
     }
 
-    @Test
     public void testTransportClientWrongAuthentication() throws Exception {
         NodesInfoResponse nodeInfos = client().admin().cluster().prepareNodesInfo().get();
         NodeInfo[] nodes = nodeInfos.getNodes();
@@ -121,18 +118,18 @@ public class CustomRealmIT extends ESIntegTestCase {
         if (randomBoolean()) {
             settings = Settings.builder()
                     .put("cluster.name", clusterName)
-                    .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS) + randomAsciiOfLength(1))
-                    .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS) + randomAsciiOfLength(1))
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
                     .build();
         } else {
             settings = Settings.builder()
                     .put("cluster.name", clusterName)
-                    .put(Headers.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                    .put(Headers.PREFIX + "." + CustomRealm.PW_HEADER, randomAsciiOfLengthBetween(16, 32))
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, randomAsciiOfLengthBetween(16, 32))
                     .build();
         }
 
-        try (TransportClient client = TransportClient.builder().addPlugin(ShieldPlugin.class).settings(settings).build()) {
+        try (TransportClient client = TransportClient.builder().addPlugin(XPackPlugin.class).settings(settings).build()) {
             client.addTransportAddress(publishAddress);
             client.admin().cluster().prepareHealth().execute().actionGet();
             fail("authentication failure should have resulted in a NoNodesAvailableException");
@@ -141,7 +138,6 @@ public class CustomRealmIT extends ESIntegTestCase {
         }
     }
 
-    @Test
     public void testSettingsFiltering() throws Exception {
         HttpResponse response = httpClient().path("/_nodes/settings")
                 .addHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))

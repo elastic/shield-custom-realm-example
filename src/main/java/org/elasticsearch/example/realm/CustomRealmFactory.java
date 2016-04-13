@@ -20,26 +20,21 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.shield.ShieldSettingsFilter;
+import org.elasticsearch.rest.RestController;
 import org.elasticsearch.shield.authc.Realm;
 import org.elasticsearch.shield.authc.RealmConfig;
 
 /**
  * The factory class for the {@link CustomRealm}. This factory class is responsible for properly constructing the realm
- * when called by the Shield framework.
+ * when called by the X-Pack framework.
  */
 public class CustomRealmFactory extends Realm.Factory<CustomRealm> {
 
-    /*
-     * The {@link ShieldSettingsFilter} is filter that allows for the settings shown in the elasticsearch REST APIs to be
-     * filtered. This is useful when there is sensitive information that should not be retrieved via HTTP requests
-     */
-    private final ShieldSettingsFilter settingsFilter;
-
     @Inject
-    public CustomRealmFactory(ShieldSettingsFilter settingsFilter) {
+    public CustomRealmFactory(RestController restController) {
         super(CustomRealm.TYPE, false);
-        this.settingsFilter = settingsFilter;
+        // we need to register the headers we use otherwise they will not be placed in the ThreadContext
+        restController.registerRelevantHeaders(CustomRealm.USER_HEADER, CustomRealm.PW_HEADER);
     }
 
     /**
@@ -49,8 +44,6 @@ public class CustomRealmFactory extends Realm.Factory<CustomRealm> {
      */
     @Override
     public CustomRealm create(RealmConfig config) {
-        // filter out all of the user information for the realm that is being created
-        settingsFilter.filterOut("shield.authc.realms." + config.name() + ".users*");
         return new CustomRealm(config);
     }
 

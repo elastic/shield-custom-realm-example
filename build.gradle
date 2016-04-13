@@ -1,0 +1,111 @@
+/*
+ * Licensed to Elasticsearch under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import org.elasticsearch.gradle.MavenFilteringHack
+import org.elasticsearch.gradle.VersionProperties
+
+version = '5.0.0-SNAPSHOT'
+
+buildscript {
+  repositories {
+    mavenLocal()
+    jcenter()
+  }
+
+  dependencies {
+    classpath "org.elasticsearch.gradle:build-tools:5.0.0-SNAPSHOT"
+  }
+}
+
+apply plugin: 'elasticsearch.build'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+repositories {
+  mavenLocal()
+  maven {
+    url 'http://download.elastic.co/elasticsearch/release'
+    artifactUrls 'http://maven.elasticsearch.org/releases'
+  }
+}
+
+dependencies {
+  provided "org.elasticsearch:elasticsearch:${version}"
+  provided "org.elasticsearch.plugin:x-pack:${version}"
+  testCompile "org.elasticsearch.test:framework:${version}"
+  testCompile "org.apache.lucene:lucene-test-framework:6.0.0"
+  testRuntime "log4j:log4j:${versions.log4j}"
+  testRuntime "org.elasticsearch.plugin:x-pack:${version}@zip"
+}
+
+Map generateSubstitutions() {
+  def stringSnap = { version ->
+    if (version.endsWith("-SNAPSHOT")) {
+      return version.substring(0, version.length() - 9)
+    }
+    return version
+  }
+  return [
+    'version': stringSnap(version),
+    'xpack.version': stringSnap(VersionProperties.elasticsearch),
+    'java.version': targetCompatibility as String
+  ]
+}
+
+processResources {
+  MavenFilteringHack.filter(it, generateSubstitutions())
+}
+
+task buildZip(type:Zip, dependsOn: [jar]) {
+  from 'build/resources/main/x-pack-extension-descriptor.properties'
+  from project.jar
+}
+
+task integTest(type: org.elasticsearch.gradle.test.RestIntegTestTask, dependsOn: buildZip) {
+  cluster {
+    plugin 'x-pack', configurations.testRuntime.filter { File file -> file.getName().equals("x-pack-${version}.zip".toString()) }
+    setting "xpack.security.authc.realms.custom.order", "0"
+    setting "xpack.security.authc.realms.custom.type", "custom"
+    setting "xpack.security.authc.realms.custom.users.user1.password", "changeme"
+    setting "xpack.security.authc.realms.custom.users.user1.roles", "superuser"
+    setting "xpack.security.authc.realms.custom.users.user2.password", "changeme"
+    setting "xpack.security.authc.realms.custom.users.user2.roles", "superuser"
+    setting "xpack.security.authc.realms.custom.users.user3.password", "changeme"
+    setting "xpack.security.authc.realms.custom.users.user3.roles", "superuser"
+    setting "xpack.security.authc.realms.file.order", "1"
+    setting "xpack.security.authc.realms.file.type", "file"
+
+    setupCommand 'setupDummyUser',
+                 'bin/x-pack/users', 'useradd', 'test_user', '-p', 'changeme', '-r', 'superuser'
+    setupCommand 'installExtension',
+                  'bin/x-pack/extension', 'install', 'file:' + buildZip.archivePath
+    waitCondition = { node, ant ->
+      File tmpFile = new File(node.cwd, 'wait.success')
+      ant.get(src: "http://${node.httpUri()}",
+              dest: tmpFile.toString(),
+              username: 'test_user',
+              password: 'changeme',
+              ignoreerrors: true,
+              retries: 10)
+      return tmpFile.exists()
+    }
+  }
+}
+check.dependsOn integTest
+integTest.mustRunAfter precommit
