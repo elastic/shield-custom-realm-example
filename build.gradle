@@ -52,7 +52,6 @@ dependencies {
   testCompile "org.apache.lucene:lucene-test-framework:6.0.0"
   testRuntime "log4j:log4j:${versions.log4j}"
   testRuntime "org.elasticsearch.plugin:x-pack:${version}@zip"
-  testRuntime 'com.sun.jna:jna:3.0.9'
 }
 
 Map generateSubstitutions() {
