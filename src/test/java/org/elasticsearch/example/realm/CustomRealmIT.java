@@ -38,6 +38,7 @@ import org.elasticsearch.xpack.XPackPlugin;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -90,10 +91,10 @@ public class CustomRealmIT extends ESIntegTestCase {
 
     public void testTransportClient() throws Exception {
         NodesInfoResponse nodeInfos = client().admin().cluster().prepareNodesInfo().get();
-        NodeInfo[] nodes = nodeInfos.getNodes();
-        assertTrue(nodes.length > 0);
+        List<NodeInfo>  nodes = nodeInfos.getNodes();
+        assertTrue(nodes.size() > 0);
         TransportAddress publishAddress = randomFrom(nodes).getTransport().address().publishAddress();
-        String clusterName = nodeInfos.getClusterNameAsString();
+        String clusterName = nodeInfos.getClusterName().value();
 
         Settings settings = Settings.builder()
                 .put("cluster.name", clusterName)
@@ -109,10 +110,10 @@ public class CustomRealmIT extends ESIntegTestCase {
 
     public void testTransportClientWrongAuthentication() throws Exception {
         NodesInfoResponse nodeInfos = client().admin().cluster().prepareNodesInfo().get();
-        NodeInfo[] nodes = nodeInfos.getNodes();
-        assertTrue(nodes.length > 0);
+        List<NodeInfo> nodes = nodeInfos.getNodes();
+        assertTrue(nodes.size() > 0);
         TransportAddress publishAddress = randomFrom(nodes).getTransport().address().publishAddress();
-        String clusterName = nodeInfos.getClusterNameAsString();
+        String clusterName = nodeInfos.getClusterName().value();
 
         Settings settings;
         if (randomBoolean()) {

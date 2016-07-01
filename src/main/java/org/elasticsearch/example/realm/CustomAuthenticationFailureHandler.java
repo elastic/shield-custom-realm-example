@@ -20,6 +20,7 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.ElasticsearchSecurityException;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.shield.authc.AuthenticationToken;
 import org.elasticsearch.shield.authc.DefaultAuthenticationFailureHandler;
@@ -44,56 +45,58 @@ import org.elasticsearch.transport.TransportMessage;
 public class CustomAuthenticationFailureHandler extends DefaultAuthenticationFailureHandler {
 
     @Override
-    public ElasticsearchSecurityException unsuccessfulAuthentication(RestRequest request, AuthenticationToken token) {
-        ElasticsearchSecurityException e = super.unsuccessfulAuthentication(request, token);
+    public ElasticsearchSecurityException failedAuthentication(RestRequest request, AuthenticationToken token, ThreadContext context) {
+        ElasticsearchSecurityException e = super.failedAuthentication(request, token, context);
         // set a custom header
         e.addHeader("WWW-Authenticate", "custom-challenge");
         return e;
     }
 
     @Override
-    public ElasticsearchSecurityException unsuccessfulAuthentication(TransportMessage message, AuthenticationToken token, String action) {
-        ElasticsearchSecurityException e = super.unsuccessfulAuthentication(message, token, action);
+    public ElasticsearchSecurityException failedAuthentication(TransportMessage message, AuthenticationToken token, String action,
+                                                               ThreadContext context) {
+        ElasticsearchSecurityException e = super.failedAuthentication(message, token, action, context);
         // set a custom header
         e.addHeader("WWW-Authenticate", "custom-challenge");
         return e;
     }
 
     @Override
-    public ElasticsearchSecurityException missingToken(RestRequest request) {
-        ElasticsearchSecurityException e = super.missingToken(request);
+    public ElasticsearchSecurityException missingToken(RestRequest request, ThreadContext context) {
+        ElasticsearchSecurityException e = super.missingToken(request, context);
         // set a custom header
         e.addHeader("WWW-Authenticate", "custom-challenge");
         return e;
     }
 
     @Override
-    public ElasticsearchSecurityException missingToken(TransportMessage message, String action) {
-        ElasticsearchSecurityException e = super.missingToken(message, action);
+    public ElasticsearchSecurityException missingToken(TransportMessage message, String action, ThreadContext context) {
+        ElasticsearchSecurityException e = super.missingToken(message, action, context);
         // set a custom header
         e.addHeader("WWW-Authenticate", "custom-challenge");
         return e;
     }
 
     @Override
-    public ElasticsearchSecurityException exceptionProcessingRequest(RestRequest request, Exception e) {
-        ElasticsearchSecurityException se = super.exceptionProcessingRequest(request, e);
+    public ElasticsearchSecurityException exceptionProcessingRequest(RestRequest request, Exception e, ThreadContext context) {
+        ElasticsearchSecurityException se = super.exceptionProcessingRequest(request, e, context);
         // set a custom header
         se.addHeader("WWW-Authenticate", "custom-challenge");
         return se;
     }
 
     @Override
-    public ElasticsearchSecurityException exceptionProcessingRequest(TransportMessage message, Exception e) {
-        ElasticsearchSecurityException se = super.exceptionProcessingRequest(message, e);
+    public ElasticsearchSecurityException exceptionProcessingRequest(TransportMessage message, String action, Exception e,
+                                                                     ThreadContext context) {
+        ElasticsearchSecurityException se = super.exceptionProcessingRequest(message, action, e, context);
         // set a custom header
         se.addHeader("WWW-Authenticate", "custom-challenge");
         return se;
     }
 
     @Override
-    public ElasticsearchSecurityException authenticationRequired(String action) {
-        ElasticsearchSecurityException se = super.authenticationRequired(action);
+    public ElasticsearchSecurityException authenticationRequired(String action, ThreadContext context) {
+        ElasticsearchSecurityException se = super.authenticationRequired(action, context);
         // set a custom header
         se.addHeader("WWW-Authenticate", "custom-challenge");
         return se;
