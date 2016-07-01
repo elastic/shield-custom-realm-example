@@ -22,12 +22,12 @@ package org.elasticsearch.example.realm;
 import org.elasticsearch.ElasticsearchSecurityException;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.shield.authc.AuthenticationToken;
-import org.elasticsearch.shield.authc.DefaultAuthenticationFailureHandler;
+import org.elasticsearch.xpack.security.authc.AuthenticationToken;
+import org.elasticsearch.xpack.security.authc.DefaultAuthenticationFailureHandler;
 import org.elasticsearch.transport.TransportMessage;
 
 /**
- * A custom implementation of a {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}. The methods in this
+ * A custom implementation of a {@link org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler}. The methods in this
  * class must return an {@link ElasticsearchSecurityException} with the appropriate status and headers for a client to
  * be able to handle an authentication failure. These methods can be called when there is a missing token, failure
  * to authenticate an extracted token, or when an exception occurs processing a request.
@@ -36,7 +36,7 @@ import org.elasticsearch.transport.TransportMessage;
  * <code>WWW-Authenticate</code> header to return a custom challenge for demonstration purposes. The default return
  * value is a 401 status with a Basic authentication challenge.
  *
- * Other implementations may choose to simply implement the {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}
+ * Other implementations may choose to simply implement the {@link org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler}
  * interface and construct the {@link ElasticsearchSecurityException} instances in the methods with the appropriate
  * {@link org.elasticsearch.rest.RestStatus} and headers. One example is for a realm that will integrate with a single
  * sign on service as in most cases these realms will need to redirect with a {@link org.elasticsearch.rest.RestStatus#FOUND}

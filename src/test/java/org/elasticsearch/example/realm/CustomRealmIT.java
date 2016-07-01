@@ -19,9 +19,12 @@
 
 package org.elasticsearch.example.realm;
 
+import org.apache.http.message.BasicHeader;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -32,10 +35,8 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.test.ESIntegTestCase;
-import org.elasticsearch.test.rest.client.http.HttpResponse;
 import org.elasticsearch.xpack.XPackPlugin;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -75,18 +76,22 @@ public class CustomRealmIT extends ESIntegTestCase {
     }
 
     public void testHttpConnectionWithNoAuthentication() throws Exception {
-        HttpResponse response = httpClient().path("/").execute();
-        assertThat(response.getStatusCode(), is(401));
-        String value = response.getHeaders().get("WWW-Authenticate");
-        assertThat(value, is("custom-challenge"));
+        try(Response bad = getRestClient().performRequest("GET", "/", Collections.emptyMap(), null)) {
+            fail("an exception should be thrown but got: " + bad.getEntity().toString());
+        } catch (ResponseException e) {
+            Response response = e.getResponse();
+            assertThat(response.getStatusLine().getStatusCode(), is(401));
+            String value = response.getHeader("WWW-Authenticate");
+            assertThat(value, is("custom-challenge"));
+        }
     }
 
     public void testHttpAuthentication() throws Exception {
-        HttpResponse response = httpClient().path("/")
-                .addHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                .addHeader(CustomRealm.PW_HEADER, PASSWORD)
-                .execute();
-        assertThat(response.getStatusCode(), is(200));
+        try(Response response = getRestClient().performRequest("GET", "/", Collections.emptyMap(), null,
+                new BasicHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS)),
+                new BasicHeader(CustomRealm.PW_HEADER, PASSWORD))) {
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+        }
     }
 
     public void testTransportClient() throws Exception {
@@ -140,27 +145,27 @@ public class CustomRealmIT extends ESIntegTestCase {
     }
 
     public void testSettingsFiltering() throws Exception {
-        HttpResponse response = httpClient().path("/_nodes/settings")
-                .addHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                .addHeader(CustomRealm.PW_HEADER, PASSWORD)
-                .execute();
-        assertThat(response.getStatusCode(), is(200));
+        try (Response response = getRestClient().performRequest("GET", "/_nodes/settings", Collections.emptyMap(), null,
+                new BasicHeader(CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS)),
+                new BasicHeader(CustomRealm.PW_HEADER, PASSWORD))) {
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
 
-        XContentParser parser = JsonXContent.jsonXContent.createParser(response.getBody().getBytes(StandardCharsets.UTF_8));
-        XContentParser.Token token;
-        Settings settings = null;
-        while ((token = parser.nextToken()) != null) {
-            if (token == XContentParser.Token.FIELD_NAME && parser.currentName().equals("settings")) {
-                parser.nextToken();
-                XContentBuilder builder = XContentBuilder.builder(parser.contentType().xContent());
-                settings = Settings.builder().loadFromSource(builder.copyCurrentStructure(parser).bytes().toUtf8()).build();
-                break;
+            XContentParser parser = JsonXContent.jsonXContent.createParser(response.getEntity().getContent());
+            XContentParser.Token token;
+            Settings settings = null;
+            while ((token = parser.nextToken()) != null) {
+                if (token == XContentParser.Token.FIELD_NAME && parser.currentName().equals("settings")) {
+                    parser.nextToken();
+                    XContentBuilder builder = XContentBuilder.builder(parser.contentType().xContent());
+                    settings = Settings.builder().loadFromSource(builder.copyCurrentStructure(parser).bytes().toUtf8()).build();
+                    break;
+                }
             }
-        }
-        assertThat(settings, notNullValue());
+            assertThat(settings, notNullValue());
 
-        logger.error("settings for shield.authc.realms.custom.users {}", settings.getGroups("shield.authc.realms.custom.users"));
-        // custom is the name configured externally...
-        assertTrue(settings.getGroups("shield.authc.realms.custom.users").isEmpty());
+            logger.error("settings for shield.authc.realms.custom.users {}", settings.getGroups("shield.authc.realms.custom.users"));
+            // custom is the name configured externally...
+            assertTrue(settings.getGroups("shield.authc.realms.custom.users").isEmpty());
+        }
     }
 }

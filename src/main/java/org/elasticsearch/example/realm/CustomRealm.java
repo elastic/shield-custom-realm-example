@@ -23,12 +23,12 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.shield.user.User;
-import org.elasticsearch.shield.authc.AuthenticationToken;
-import org.elasticsearch.shield.authc.Realm;
-import org.elasticsearch.shield.authc.RealmConfig;
-import org.elasticsearch.shield.authc.support.SecuredString;
-import org.elasticsearch.shield.authc.support.UsernamePasswordToken;
+import org.elasticsearch.xpack.security.user.User;
+import org.elasticsearch.xpack.security.authc.AuthenticationToken;
+import org.elasticsearch.xpack.security.authc.Realm;
+import org.elasticsearch.xpack.security.authc.RealmConfig;
+import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -24,14 +24,14 @@ import org.elasticsearch.example.realm.CustomCachingRealm;
 import org.elasticsearch.example.realm.CustomCachingRealmFactory;
 import org.elasticsearch.example.realm.CustomRealm;
 import org.elasticsearch.example.realm.CustomRealmFactory;
-import org.elasticsearch.shield.authc.AuthenticationModule;
+import org.elasticsearch.xpack.security.authc.AuthenticationModule;
 import org.elasticsearch.xpack.extensions.XPackExtension;
 
 /**
  * The extension class that serves as the integration point between Elasticsearch, X-Pack, and the custom realm that is
  * provided by this extension. The most important method in this class is the {@link CustomRealmExtension#onModule}
- * method, which registers the custom {@link org.elasticsearch.shield.authc.Realm} and
- * {@link org.elasticsearch.shield.authc.AuthenticationFailureHandler}.
+ * method, which registers the custom {@link org.elasticsearch.xpack.security.authc.Realm} and
+ * {@link org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler}.
  */
 public class CustomRealmExtension extends XPackExtension {
 

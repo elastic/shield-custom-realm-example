@@ -20,10 +20,10 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.shield.user.User;
-import org.elasticsearch.shield.authc.RealmConfig;
-import org.elasticsearch.shield.authc.support.SecuredString;
-import org.elasticsearch.shield.authc.support.UsernamePasswordToken;
+import org.elasticsearch.xpack.security.user.User;
+import org.elasticsearch.xpack.security.authc.RealmConfig;
+import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
 
 import static org.hamcrest.Matchers.arrayContaining;

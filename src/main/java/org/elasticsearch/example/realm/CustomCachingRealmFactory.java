@@ -21,8 +21,8 @@ package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.rest.RestController;
-import org.elasticsearch.shield.authc.Realm;
-import org.elasticsearch.shield.authc.RealmConfig;
+import org.elasticsearch.xpack.security.authc.Realm;
+import org.elasticsearch.xpack.security.authc.RealmConfig;
 
 /**
  * The factory class for the {@link CustomCachingRealm}. This factory class is responsible for properly constructing the

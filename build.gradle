@@ -20,7 +20,7 @@
 import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 
-version = '5.0.0-alpha3'
+version = '5.0.0-alpha4'
 
 buildscript {
   repositories {
@@ -29,7 +29,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.0.0-alpha3"
+    classpath "org.elasticsearch.gradle:build-tools:5.0.0-alpha4"
   }
 }
 
@@ -48,8 +48,9 @@ repositories {
 dependencies {
   provided "org.elasticsearch:elasticsearch:${version}"
   provided "org.elasticsearch.plugin:x-pack:${version}"
+  provided "net.java.dev.jna:jna:4.2.2"
   testCompile "org.elasticsearch.test:framework:${version}"
-  testCompile "org.apache.lucene:lucene-test-framework:6.0.0"
+  testCompile "org.apache.lucene:lucene-test-framework:6.1.0"
   testRuntime "log4j:log4j:${versions.log4j}"
   testRuntime "org.elasticsearch.plugin:x-pack:${version}@zip"
 }
