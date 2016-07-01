@@ -33,4 +33,6 @@ nbactions.xml
 
 dependency-reduced-pom.xml
 classes
-gradle-wrapper.jar
+gradle/
+gradlew
+gradlew.bat
