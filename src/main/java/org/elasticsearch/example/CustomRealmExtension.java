@@ -19,19 +19,23 @@
 
 package org.elasticsearch.example;
 
+import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.example.realm.CustomAuthenticationFailureHandler;
 import org.elasticsearch.example.realm.CustomCachingRealm;
 import org.elasticsearch.example.realm.CustomCachingRealmFactory;
 import org.elasticsearch.example.realm.CustomRealm;
 import org.elasticsearch.example.realm.CustomRealmFactory;
-import org.elasticsearch.xpack.security.authc.AuthenticationModule;
 import org.elasticsearch.xpack.extensions.XPackExtension;
+import org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler;
+import org.elasticsearch.xpack.security.authc.Realm.Factory;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * The extension class that serves as the integration point between Elasticsearch, X-Pack, and the custom realm that is
- * provided by this extension. The most important method in this class is the {@link CustomRealmExtension#onModule}
- * method, which registers the custom {@link org.elasticsearch.xpack.security.authc.Realm} and
- * {@link org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler}.
+ * provided by this extension.
  */
 public class CustomRealmExtension extends XPackExtension {
 
@@ -46,34 +50,38 @@ public class CustomRealmExtension extends XPackExtension {
     }
 
     /**
-     * Registers the custom authentication classes with the X-Pack AuthenticationModule. This method is very important;
-     * without a proper implementation, X-Pack will not be able to locate your custom realm.
-     *
-     * This method is called by the X-Pack extension framework and allows for custom interaction with the modules. In
-     * this method, one or more custom realms can be registered and a custom authentication failure handler can also be
-     * registered.
-     *
-     * @param authenticationModule the X-Pack AuthenticationModule
+     * Returns a collection of header names that will be used by this extension. This is necessary to ensure the headers are copied from
+     * the incoming request and made available to your realm(s).
      */
-    public void onModule(AuthenticationModule authenticationModule) {
-        /*
-         * Registers the custom realm. The first parameter is the String representation of a realm type; this is the
-         * value that is specified when declaring a realm in the settings. Note, the realm type cannot be one of the
-         * types defined by X-Pack. In order to avoid a conflict, you may wish to use some prefix to your realm types.
-         *
-         * The second parameter is the Realm.Factory implementation. This factory class will be used to create any realm
-         * of this type that is defined in the elasticsearch settings.
-         */
-        authenticationModule.addCustomRealm(CustomRealm.TYPE, CustomRealmFactory.class);
+    @Override
+    public Collection<String> getRestHeaders() {
+        return Arrays.asList(CustomRealm.USER_HEADER, CustomRealm.PW_HEADER);
+    }
 
-        // register the custom caching realm with a separate call
-        authenticationModule.addCustomRealm(CustomCachingRealm.TYPE, CustomCachingRealmFactory.class);
+    /**
+     * Returns a map of the custom realms provided by this extension. The first parameter is the string representation of the realm type;
+     * this is the value that is specified when declaring a realm in the settings. Note, the realm type cannot be one of the types
+     * defined by X-Pack. In order to avoid a conflict, you may wish to use some prefix to your realm types.
+     *
+     * The second parameter is an instance of the {@link Factory} implementation. This factory class will be used to create realms of
+     * this type that are defined in the elasticsearch settings.
+     */
+    @Override
+    public Map<String, Factory> getRealms() {
+        return new MapBuilder<String, Factory>()
+                .put(CustomRealm.TYPE, new CustomRealmFactory())
+                .put(CustomCachingRealm.TYPE, new CustomCachingRealmFactory())
+                .immutableMap();
+    }
 
-        /*
-         * Register the custom authentication failure handler. Note only one implementation of a failure handler can
-         * exist and there is a default implementation that can be extended where appropriate. If no changes are needed
-         * to the default implementation, then a custom failure handler does not need to be provided.
-         */
-        authenticationModule.setAuthenticationFailureHandler(CustomAuthenticationFailureHandler.class);
+    /**
+     * Returns the custom authentication failure handler. Note only one implementation and instance of a failure handler can
+     * exist. There is a default implementation, {@link org.elasticsearch.xpack.security.authc.DefaultAuthenticationFailureHandler} that
+     * can be extended where appropriate. If no changes are needed to the default implementation, then there is no need to override this
+     * method.
+     */
+    @Override
+    public AuthenticationFailureHandler getAuthenticationFailureHandler() {
+        return new CustomAuthenticationFailureHandler();
     }
 }

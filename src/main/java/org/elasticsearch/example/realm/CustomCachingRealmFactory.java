@@ -19,8 +19,6 @@
 
 package org.elasticsearch.example.realm;
 
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.rest.RestController;
 import org.elasticsearch.xpack.security.authc.Realm;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 
@@ -28,14 +26,7 @@ import org.elasticsearch.xpack.security.authc.RealmConfig;
  * The factory class for the {@link CustomCachingRealm}. This factory class is responsible for properly constructing the
  * realm when called by the X-Pack framework.
  */
-public class CustomCachingRealmFactory extends Realm.Factory<CustomCachingRealm> {
-
-    @Inject
-    public CustomCachingRealmFactory(RestController restController) {
-        super(CustomCachingRealm.TYPE, false);
-        // we need to register the headers we use otherwise they will not be placed in the ThreadContext
-        restController.registerRelevantHeaders(CustomRealm.USER_HEADER, CustomRealm.PW_HEADER);
-    }
+public class CustomCachingRealmFactory implements Realm.Factory {
 
     /**
      * Create a {@link CustomRealm} based on the given configuration
@@ -45,16 +36,5 @@ public class CustomCachingRealmFactory extends Realm.Factory<CustomCachingRealm>
     @Override
     public CustomCachingRealm create(RealmConfig config) {
         return new CustomCachingRealm(config);
-    }
-
-    /**
-     * Method that can be called to create a realm without configuration. This is called for internal realms only and
-     * can simply return <code>null</code>
-     * @param name the name of the realm
-     * @return <code>null</code>
-     */
-    @Override
-    public CustomCachingRealm createDefault(String name) {
-        return null;
     }
 }

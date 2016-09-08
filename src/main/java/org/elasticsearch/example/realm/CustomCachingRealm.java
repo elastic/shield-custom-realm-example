@@ -19,6 +19,7 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.CachingRealm;
@@ -51,11 +52,12 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
     /**
      * Overridden authenticate method that first checks the cache. If the user is not in the cache, the super method
      * is called and if a non-null value is returned, it is cached
-     * @param token the token to authenticate
+     * @param authenticationToken the token to authenticate
      * @return {@link User} if authentication is successful, otherwise <code>null</code>
      */
     @Override
-    public User authenticate(UsernamePasswordToken token) {
+    public User authenticate(AuthenticationToken authenticationToken) {
+        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
         UserHolder userHolder = cache.get(token.principal());
         // NOTE the null check for the password. This is done because a cache is shared between authentication and lookup
         // lookup will not store the password...

@@ -44,7 +44,7 @@ import java.util.Map.Entry;
  * that can be used for authentication, but does so in a non standard manner by retrieving the values from a header
  * in the request.
  */
-public class CustomRealm extends Realm<UsernamePasswordToken> {
+public class CustomRealm extends Realm{
 
     /*
      * The type of the realm. This is defined as a static final variable to prevent typos
@@ -112,11 +112,12 @@ public class CustomRealm extends Realm<UsernamePasswordToken> {
      * Method that handles the actual authentication of the token. This method will only be called if the token is a
      * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
      * returned
-     * @param token the token to authenticate
+     * @param authenticationToken the token to authenticate
      * @return {@link User} if authentication is successful, otherwise <code>null</code>
      */
     @Override
-    public User authenticate(UsernamePasswordToken token) {
+    public User authenticate(AuthenticationToken authenticationToken) {
+        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
         final String actualUser = token.principal();
         final InfoHolder info = usersMap.get(actualUser);
 
