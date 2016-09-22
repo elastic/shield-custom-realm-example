@@ -5,8 +5,7 @@ h2. Introduction
 p. This project contains an example "custom realm":https://www.elastic.co/guide/en/x-pack/current/custom-realms.html extension for X-Pack.
 This is the follow-on to the custom realm plugin for Shield; examples of that can still be found in the other branches.
 
-p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing
-the extension for.
+p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing the extension for.
 
 |_. Branch |_.  Elasticsearch Version   |
 | "master":https://github.com/elastic/shield-custom-realm-example                          | 5.0.0  |
@@ -18,22 +17,17 @@ the extension for.
 
 h2. Creating an X-Pack Extension
 
-p. An X-Pack extension is packaged as a zip file consisting of jar files and a descriptor file named @x-pack-extension-descriptor.properties@.
-The extension is written in Java. This example uses Gradle to build the extension that implements a custom realm.
+p. An X-Pack extension is packaged as a zip file consisting of jar files and a descriptor file named @x-pack-extension-descriptor.properties@. The extension is written in Java. This example uses Gradle to build the extension that implements a custom realm.
 
-p. In most cases, taking this project and modifying the structure will allow you to start developing your own custom realm for X-Pack
-quickly.
+p. In most cases, taking this project and modifying the structure will allow you to start developing your own custom realm for X-Pack quickly.
 
 h2. Building and Testing the Plugin
 
-p. Checkout the branch that matches the latest version of X-Pack and run @gradle clean check@. This will compile the extension, run unit
-tests, package the extension, download Elasticsearch and X-Pack, install the extension, and run tests against an instance of
-Elasticsearch. The resulting artifacts will be located in the @build/distribution@ directory.
+p. Checkout the branch that matches the latest version of X-Pack and run @gradle clean check@. This will compile the extension, run unit tests, package the extension, download Elasticsearch and X-Pack, install the extension, and run tests against an instance of Elasticsearch. The resulting artifacts will be located in the @build/distribution@ directory.
 
 h3. Example Configuration
 
-p. In the @elasticsearch.yml@ file you will define a realm as specified in the X-Pack documentation. An example of this configuration would
-be:
+p. In the @elasticsearch.yml@ file you will define a realm as specified in the X-Pack documentation. An example of this configuration would be:
 
 bc.. xpack.security:
   authc:
@@ -52,9 +46,7 @@ bc.. xpack.security:
         type: file
         order: 1
 
-p. In this example, a @custom@ realm is configured alongside a @file@ realm. The users for the custom realm are specified in the
-configuration along with their roles and passwords. Please note that the definition of users and roles in the configuration file is not
-secure and is only used to provide an easy to understand example of a custom realm.
+p. In this example, a @custom@ realm is configured alongside a @file@ realm. The users for the custom realm are specified in the configuration along with their roles and passwords. Please note that the definition of users and roles in the configuration file is not secure and is only used to provide an easy to understand example of a custom realm.
 
 p. Custom realms can be dynamic in that users and user to role mappings do not need to be static; the custom realm needs to be able to:
 
@@ -64,11 +56,8 @@ p. Custom realms can be dynamic in that users and user to role mappings do not n
 
 h2. Integration Points with X-Pack
 
-p. This project shows an example of and documents the two integrations points with X-Pack. These are the ability to define one or more
-custom realms and the ability to define a single custom authentication failure handler to control the challenges sent to the user as part
-of the authentication process. These classes have code comments documenting their functionality.
+p. This project shows an example of and documents the two integrations points with X-Pack. These are the ability to define one or more custom realms and the ability to define a single custom authentication failure handler to control the challenges sent to the user as part of the authentication process. These classes have code comments documenting their functionality.
 
 h2. Questions
 
-p. If you have questions about custom realms, please join us in our "discussion forums":https://discuss.elastic.co where we will be able to
-help you.
+p. If you have questions about custom realms, please join us in our "discussion forums":https://discuss.elastic.co where we will be able to help you.
