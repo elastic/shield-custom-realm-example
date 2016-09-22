@@ -20,16 +20,15 @@
 import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 
-version = '5.0.0-alpha5'
+version = '5.0.0-beta1'
 
 buildscript {
   repositories {
-    mavenLocal()
     jcenter()
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.0.0-alpha5"
+    classpath "org.elasticsearch.gradle:build-tools:5.0.0-beta1"
   }
 }
 
@@ -38,23 +37,23 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 
 repositories {
-  mavenLocal()
+  jcenter()
   maven {
-    url 'http://download.elastic.co/elasticsearch/release'
-    artifactUrls 'http://maven.elasticsearch.org/releases'
+    url "https://artifacts.elastic.co/maven"
   }
 }
 
 dependencies {
   provided "org.elasticsearch:elasticsearch:${version}"
-  provided ("org.elasticsearch.plugin:x-pack:${version}") {
-    exclude module: 'transport-netty4-client-client'
-  }
-  provided "org.elasticsearch.plugin:transport-netty4-client:${version}"
+  provided "org.elasticsearch.plugin:x-pack-api:${version}"
   provided "net.java.dev.jna:jna:4.2.2"
+
   testCompile "org.elasticsearch.test:framework:${version}"
-  testCompile "org.apache.lucene:lucene-test-framework:6.1.0"
-  testRuntime "log4j:log4j:${versions.log4j}"
+  testCompile ("org.elasticsearch.client:x-pack-transport:${version}")
+  testCompile "org.apache.lucene:lucene-test-framework:6.2.0"
+  testCompile "org.apache.logging.log4j:log4j-api:${versions.log4j}"
+  testCompile "org.apache.logging.log4j:log4j-core:${versions.log4j}"
+
   testRuntime "org.elasticsearch.plugin:x-pack:${version}@zip"
 }
 
@@ -82,6 +81,7 @@ task buildZip(type:Zip, dependsOn: [jar]) {
 }
 
 task integTest(type: org.elasticsearch.gradle.test.RestIntegTestTask, dependsOn: buildZip) {
+  systemProperty 'tests.security.manager', 'false'
   cluster {
     setting "xpack.security.authc.realms.custom.order", "0"
     setting "xpack.security.authc.realms.custom.type", "custom"
@@ -113,4 +113,4 @@ task integTest(type: org.elasticsearch.gradle.test.RestIntegTestTask, dependsOn:
   }
 }
 check.dependsOn integTest
-integTest.mustRunAfter precommit
+integTest.mustRunAfter precommit, test
