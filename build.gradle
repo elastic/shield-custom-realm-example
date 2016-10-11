@@ -20,15 +20,18 @@
 import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 
-version = '5.0.0-beta1'
+version = '5.0.0-rc1'
 
 buildscript {
   repositories {
     jcenter()
+    maven {
+      url "https://artifacts.elastic.co/maven"
+    }
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.0.0-beta1"
+    classpath "org.elasticsearch.gradle:build-tools:5.0.0-rc1"
   }
 }
 
@@ -49,7 +52,7 @@ dependencies {
   provided "net.java.dev.jna:jna:4.2.2"
 
   testCompile "org.elasticsearch.test:framework:${version}"
-  testCompile ("org.elasticsearch.client:x-pack-transport:${version}")
+  testCompile "org.elasticsearch.client:x-pack-transport:${version}"
   testCompile "org.apache.lucene:lucene-test-framework:6.2.0"
   testCompile "org.apache.logging.log4j:log4j-api:${versions.log4j}"
   testCompile "org.apache.logging.log4j:log4j-core:${versions.log4j}"
