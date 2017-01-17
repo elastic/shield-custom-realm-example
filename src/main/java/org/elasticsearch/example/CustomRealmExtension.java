@@ -25,6 +25,7 @@ import org.elasticsearch.example.realm.CustomCachingRealm;
 import org.elasticsearch.example.realm.CustomCachingRealmFactory;
 import org.elasticsearch.example.realm.CustomRealm;
 import org.elasticsearch.example.realm.CustomRealmFactory;
+import org.elasticsearch.watcher.ResourceWatcherService;
 import org.elasticsearch.xpack.extensions.XPackExtension;
 import org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler;
 import org.elasticsearch.xpack.security.authc.Realm.Factory;
@@ -67,7 +68,7 @@ public class CustomRealmExtension extends XPackExtension {
      * this type that are defined in the elasticsearch settings.
      */
     @Override
-    public Map<String, Factory> getRealms() {
+    public Map<String, Factory> getRealms(ResourceWatcherService resourceWatcherService) {
         return new MapBuilder<String, Factory>()
                 .put(CustomRealm.TYPE, new CustomRealmFactory())
                 .put(CustomCachingRealm.TYPE, new CustomCachingRealmFactory())
