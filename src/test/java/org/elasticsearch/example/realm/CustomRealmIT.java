@@ -31,6 +31,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -153,7 +154,7 @@ public class CustomRealmIT extends ESIntegTestCase {
             new BasicHeader(CustomRealm.PW_HEADER, PASSWORD));
         assertThat(response.getStatusLine().getStatusCode(), is(200));
 
-        XContentParser parser = JsonXContent.jsonXContent.createParser(response.getEntity().getContent());
+        XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, response.getEntity().getContent());
         XContentParser.Token token;
         Settings settings = null;
         while ((token = parser.nextToken()) != null) {

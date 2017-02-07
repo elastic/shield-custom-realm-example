@@ -1,0 +1,49 @@
+/*
+ * Licensed to Elasticsearch under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+// this grant block is the default from the x-pack plugin. We use this for tests to avoid issues
+grant {
+  // needed because of problems in unbound LDAP library
+  permission java.util.PropertyPermission "*", "read,write";
+
+  // required to configure the custom mailcap for watcher
+  permission java.lang.RuntimePermission "setFactory";
+
+  // needed when sending emails for javax.activation
+  // otherwise a classnotfound exception is thrown due to trying
+  // to load the class with the application class loader
+  permission java.lang.RuntimePermission "setContextClassLoader";
+  permission java.lang.RuntimePermission "getClassLoader";
+  // TODO: remove use of this jar as soon as possible!!!!
+  permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.registries";
+
+  // bouncy castle
+  permission java.security.SecurityPermission "putProviderProperty.BC";
+
+  // needed for x-pack security extension
+  permission java.security.SecurityPermission "createPolicy.JavaPolicy";
+  permission java.security.SecurityPermission "getPolicy";
+  permission java.security.SecurityPermission "setPolicy";
+
+  // Netty SelectorUtil wants to change this, because of https://bugs.openjdk.java.net/browse/JDK-6427854
+  // the bug says it only happened rarely, and that its fixed, but apparently it still happens rarely!
+  permission java.util.PropertyPermission "sun.nio.ch.bugLevel", "write";
+
+  // needed for multiple server implementations used in tests
+  permission java.net.SocketPermission "*", "accept,connect";
+};
