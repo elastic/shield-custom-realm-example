@@ -19,8 +19,9 @@
 
 import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
+import org.elasticsearch.gradle.test.RestIntegTestTask
 
-version = '5.2.0'
+version = '5.3.0'
 
 buildscript {
   repositories {
@@ -31,7 +32,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.2.0"
+    classpath "org.elasticsearch.gradle:build-tools:5.3.0"
   }
 }
 
@@ -83,9 +84,15 @@ task buildZip(type:Zip, dependsOn: [jar]) {
   from project.jar
 }
 
-task integTest(type: org.elasticsearch.gradle.test.RestIntegTestTask, dependsOn: buildZip) {
-  systemProperty 'tests.security.manager', 'false'
-  cluster {
+
+RestIntegTestTask integTest = project.tasks.create('integTest', RestIntegTestTask.class) {
+    runner.systemProperty 'tests.security.manager', 'false'
+}
+integTest.dependsOn(project.buildZip)
+integTest.mustRunAfter(project.precommit, project.test)
+project.check.dependsOn(integTest)
+
+integTestCluster {
     setting "xpack.security.authc.realms.custom.order", "0"
     setting "xpack.security.authc.realms.custom.type", "custom"
     setting "xpack.security.authc.realms.custom.users.user1.password", "changeme"
@@ -98,22 +105,19 @@ task integTest(type: org.elasticsearch.gradle.test.RestIntegTestTask, dependsOn:
     setting "xpack.security.authc.realms.file.type", "file"
 
     setupCommand 'installXPackPlugin',
-                 'bin/elasticsearch-plugin', 'install', configurations.testRuntime.filter { File file -> file.getName().equals ("x-pack-${version}.zip".toString()) }.getSingleFile().toURI().toString()
+            'bin/elasticsearch-plugin', 'install', configurations.testRuntime.filter { File file -> file.getName().equals ("x-pack-${version}.zip".toString()) }.getSingleFile().toURI().toString()
     setupCommand 'setupDummyUser',
-                 'bin/x-pack/users', 'useradd', 'test_user', '-p', 'changeme', '-r', 'superuser'
+            'bin/x-pack/users', 'useradd', 'test_user', '-p', 'changeme', '-r', 'superuser'
     setupCommand 'installExtension',
-                  'bin/x-pack/extension', 'install', 'file:' + buildZip.archivePath
+            'bin/x-pack/extension', 'install', 'file:' + buildZip.archivePath
     waitCondition = { node, ant ->
-      File tmpFile = new File(node.cwd, 'wait.success')
-      ant.get(src: "http://${node.httpUri()}",
-              dest: tmpFile.toString(),
-              username: 'test_user',
-              password: 'changeme',
-              ignoreerrors: true,
-              retries: 10)
-      return tmpFile.exists()
+        File tmpFile = new File(node.cwd, 'wait.success')
+        ant.get(src: "http://${node.httpUri()}",
+                dest: tmpFile.toString(),
+                username: 'test_user',
+                password: 'changeme',
+                ignoreerrors: true,
+                retries: 10)
+        return tmpFile.exists()
     }
-  }
 }
-check.dependsOn integTest
-integTest.mustRunAfter precommit, test
