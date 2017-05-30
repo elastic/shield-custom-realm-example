@@ -21,7 +21,7 @@ import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 import org.elasticsearch.gradle.test.RestIntegTestTask
 
-version = '5.3.2'
+version = '5.4.0'
 
 buildscript {
   repositories {
@@ -32,7 +32,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.3.2"
+    classpath "org.elasticsearch.gradle:build-tools:5.4.0"
   }
 }
 
@@ -50,7 +50,7 @@ repositories {
 dependencies {
   provided "org.elasticsearch:elasticsearch:${version}"
   provided "org.elasticsearch.plugin:x-pack-api:${version}"
-  provided "net.java.dev.jna:jna:4.2.2"
+  provided "org.elasticsearch:jna:4.4.0"
 
   testCompile "org.elasticsearch.test:framework:${version}"
   testCompile "org.elasticsearch.client:x-pack-transport:${version}"
@@ -93,6 +93,8 @@ integTest.mustRunAfter(project.precommit, project.test)
 project.check.dependsOn(integTest)
 
 integTestCluster {
+    setting "xpack.monitoring.enabled", "false" // monitoring depends on painless which is not available to us
+    setting "xpack.ml.enabled", "false" // ml has named writeables and the check for cluster state consistency doesn't know about them
     setting "xpack.security.authc.realms.custom.order", "0"
     setting "xpack.security.authc.realms.custom.type", "custom"
     setting "xpack.security.authc.realms.custom.users.user1.password", "changeme"

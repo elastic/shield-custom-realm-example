@@ -128,14 +128,14 @@ public class CustomRealmIT extends ESIntegTestCase {
         if (randomBoolean()) {
             settings = Settings.builder()
                     .put("cluster.name", clusterName)
-                    .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS) + randomAsciiOfLength(1))
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS) + randomAlphaOfLength(1))
                     .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, PASSWORD)
                     .build();
         } else {
             settings = Settings.builder()
                     .put("cluster.name", clusterName)
                     .put(ThreadContext.PREFIX + "." + CustomRealm.USER_HEADER, randomFrom(KNOWN_USERS))
-                    .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, randomAsciiOfLengthBetween(16, 32))
+                    .put(ThreadContext.PREFIX + "." + CustomRealm.PW_HEADER, randomAlphaOfLengthBetween(16, 32))
                     .build();
         }
 
