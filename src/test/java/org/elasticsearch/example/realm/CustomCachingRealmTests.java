@@ -20,6 +20,8 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.SecuredString;
@@ -46,7 +48,8 @@ public class CustomCachingRealmTests extends ESTestCase {
                 .put("users.john.password", "doe")
                 .put("users.john.roles", "user")
                 .build();
-        CustomCachingRealm realm = new CustomCachingRealm(new RealmConfig("test", realmSettings, globalSettings));
+        CustomCachingRealm realm = new CustomCachingRealm(new RealmConfig("test", realmSettings, globalSettings,
+                new Environment(globalSettings), new ThreadContext(globalSettings)));
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));

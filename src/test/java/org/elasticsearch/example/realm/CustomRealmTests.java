@@ -20,6 +20,8 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.SecuredString;
@@ -46,7 +48,8 @@ public class CustomRealmTests extends ESTestCase {
                 .put("users.jane.password", "test")
                 .putArray("users.jane.roles", "user", "admin")
                 .build();
-        CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings));
+        CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
+                new Environment(globalSettings), new ThreadContext(globalSettings)));
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));
@@ -73,9 +76,10 @@ public class CustomRealmTests extends ESTestCase {
                 .putArray("users.jane.roles", "user", "admin")
                 .build();
 
-        CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings));
+        CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
+                new Environment(globalSettings), new ThreadContext(globalSettings)));
         UsernamePasswordToken token =
-                new UsernamePasswordToken("john1", new SecuredString(randomAsciiOfLengthBetween(4, 16).toCharArray()));
+                new UsernamePasswordToken("john1", new SecuredString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
         User user = realm.authenticate(token);
         assertThat(user, nullValue());
     }
