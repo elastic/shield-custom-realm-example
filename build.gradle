@@ -21,7 +21,7 @@ import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 import org.elasticsearch.gradle.test.RestIntegTestTask
 
-version = '5.4.0'
+version = '5.4.1'
 
 buildscript {
   repositories {
@@ -32,7 +32,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.4.0"
+    classpath "org.elasticsearch.gradle:build-tools:5.4.1"
   }
 }
 
@@ -88,11 +88,11 @@ task buildZip(type:Zip, dependsOn: [jar]) {
 RestIntegTestTask integTest = project.tasks.create('integTest', RestIntegTestTask.class) {
     runner.systemProperty 'tests.security.manager', 'false'
 }
-integTest.dependsOn(project.buildZip)
 integTest.mustRunAfter(project.precommit, project.test)
 project.check.dependsOn(integTest)
 
 integTestCluster {
+    dependsOn buildZip
     setting "xpack.monitoring.enabled", "false" // monitoring depends on painless which is not available to us
     setting "xpack.ml.enabled", "false" // ml has named writeables and the check for cluster state consistency doesn't know about them
     setting "xpack.security.authc.realms.custom.order", "0"
