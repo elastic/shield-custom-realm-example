@@ -158,9 +158,9 @@ public class CustomRealm extends Realm{
      * @return a {@link Map} of the usernames to the information about the user
      */
     private static Map<String, InfoHolder> parseUsersMap(Settings settings) {
-        Map<String, Settings> usersSerttings = settings.getGroups("users");
-        Map<String, InfoHolder> usersMap = new HashMap<>(usersSerttings.size());
-        for (Entry<String, Settings> entry : usersSerttings.entrySet()) {
+        Map<String, Settings> usersSettings = settings.getGroups("users");
+        Map<String, InfoHolder> usersMap = new HashMap<>(usersSettings.size());
+        for (Entry<String, Settings> entry : usersSettings.entrySet()) {
             Settings userSettings = entry.getValue();
             String username = entry.getKey();
             String password = userSettings.get("password");
