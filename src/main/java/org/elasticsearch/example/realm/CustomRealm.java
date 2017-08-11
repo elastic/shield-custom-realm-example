@@ -19,6 +19,7 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
@@ -125,6 +126,16 @@ public class CustomRealm extends Realm{
             return new User(actualUser, info.roles);
         }
         return null;
+    }
+
+    /* this is the provided implementation from org.elasticsearch.xpack.security.authc.Realm */
+    @Override
+    public void authenticate(AuthenticationToken token, ActionListener<User> listener) {
+        try {
+            listener.onResponse(authenticate(token));
+        } catch (Exception e) {
+            listener.onFailure(e);
+        }
     }
 
     /**
