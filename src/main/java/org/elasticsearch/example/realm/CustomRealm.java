@@ -27,7 +27,7 @@ import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.authc.Realm;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 
 import java.util.Collections;
@@ -102,7 +102,7 @@ public class CustomRealm extends Realm{
         if (user != null) {
             String password = threadContext.getHeader(PW_HEADER);
             if (password != null) {
-                return new UsernamePasswordToken(user, new SecuredString(password.toCharArray()));
+                return new UsernamePasswordToken(user, new SecureString(password.toCharArray()));
             }
         }
         return null;
@@ -121,7 +121,7 @@ public class CustomRealm extends Realm{
         final String actualUser = token.principal();
         final InfoHolder info = usersMap.get(actualUser);
 
-        if (info != null && SecuredString.constantTimeEquals(token.credentials(), info.password)) {
+        if (info != null && token.credentials().equals(info.password)) {
             return new User(actualUser, info.roles);
         }
         return null;

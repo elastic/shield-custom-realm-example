@@ -24,7 +24,7 @@ import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
 
@@ -52,7 +52,7 @@ public class CustomCachingRealmTests extends ESTestCase {
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
 
         // authenticate john
-        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));
+        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
         final User user = realm.authenticate(token);
         assertThat(user, notNullValue());
         assertThat(user.roles(), arrayContaining("user"));
@@ -71,7 +71,7 @@ public class CustomCachingRealmTests extends ESTestCase {
         assertThat(user1, nullValue());
 
         // authenticate with new password
-        token = new UsernamePasswordToken("john", new SecuredString("changed".toCharArray()));
+        token = new UsernamePasswordToken("john", new SecureString("changed".toCharArray()));
         user1 = realm.authenticate(token);
         assertThat(user1, sameInstance(user));
 
@@ -87,7 +87,7 @@ public class CustomCachingRealmTests extends ESTestCase {
         assertThat(user1, nullValue());
 
         // authenticate with correct password should work
-        token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));
+        token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
         user1 = realm.authenticate(token);
         assertThat(user1, not(nullValue()));
         assertThat(user1, not(sameInstance(user)));

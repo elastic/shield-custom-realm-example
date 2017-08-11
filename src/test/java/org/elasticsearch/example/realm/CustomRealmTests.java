@@ -24,7 +24,7 @@ import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
 
@@ -52,14 +52,14 @@ public class CustomRealmTests extends ESTestCase {
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
 
         // authenticate john
-        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));
+        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
         User user = realm.authenticate(token);
         assertThat(user, notNullValue());
         assertThat(user.roles(), arrayContaining("user"));
         assertThat(user.principal(), equalTo("john"));
 
         // authenticate jane
-        token = new UsernamePasswordToken("jane", new SecuredString(new char[] { 't', 'e', 's', 't'}));
+        token = new UsernamePasswordToken("jane", new SecureString(new char[] { 't', 'e', 's', 't'}));
         user = realm.authenticate(token);
         assertThat(user, notNullValue());
         assertThat(user.roles(), arrayContaining("user", "admin"));
@@ -79,7 +79,7 @@ public class CustomRealmTests extends ESTestCase {
         CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
         UsernamePasswordToken token =
-                new UsernamePasswordToken("john1", new SecuredString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
+                new UsernamePasswordToken("john1", new SecureString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
         User user = realm.authenticate(token);
         assertThat(user, nullValue());
     }

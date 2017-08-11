@@ -19,11 +19,11 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.CachingRealm;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,11 +64,11 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
         if (userHolder == null || userHolder.password == null) {
             User user = super.authenticate(token);
             if (user != null) {
-                userHolder = new UserHolder(token.credentials().copyChars(), user);
+                userHolder = new UserHolder(token.credentials().getChars(), user);
                 cache.put(token.principal(), userHolder);
                 return user;
             }
-        } else if (SecuredString.constantTimeEquals(token.credentials().internalChars(), userHolder.password)) {
+        } else if (token.credentials().equals(new SecureString(userHolder.password))) {
             return userHolder.user;
         }
         return null;
