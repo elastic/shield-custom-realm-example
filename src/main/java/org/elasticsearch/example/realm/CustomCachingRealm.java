@@ -19,6 +19,7 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.user.User;
@@ -73,6 +74,16 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
         }
         return null;
     }
+
+    /* this is the provided implementation from org.elasticsearch.xpack.security.authc.Realm */
+    @Override
+    public void authenticate(AuthenticationToken token, ActionListener<User> listener) {
+        try {
+            listener.onResponse(authenticate(token));
+        } catch (Exception e) {
+            listener.onFailure(e);
+        }
+	}
 
     /**
      * Overridden method that will lookup a user from the cache first. If the user is not in the cache, then the super
