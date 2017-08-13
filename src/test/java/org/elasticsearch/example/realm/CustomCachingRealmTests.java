@@ -24,6 +24,7 @@ import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
@@ -40,6 +41,8 @@ import static org.hamcrest.Matchers.sameInstance;
  */
 public class CustomCachingRealmTests extends ESTestCase {
 
+    private User first = null;
+
     public void testAuthenticateWithCachedValue() {
         //setup
         Settings globalSettings = Settings.builder().put("path.home", createTempDir()).build();
@@ -53,27 +56,33 @@ public class CustomCachingRealmTests extends ESTestCase {
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
-        final User user = realm.authenticate(token);
-        assertThat(user, notNullValue());
-        assertThat(user.roles(), arrayContaining("user"));
-        assertThat(user.principal(), equalTo("john"));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, notNullValue());
+            assertThat(user.roles(), arrayContaining("user"));
+            assertThat(user.principal(), equalTo("john"));
+            CustomCachingRealmTests.this.first = user;
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate john again and we should be returned the same user object
         User user1 = realm.authenticate(token);
-        assertThat(user1, sameInstance(user));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, sameInstance(first));
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // modify the cache entry with a changed password
-        CustomCachingRealm.UserHolder holder = new CustomCachingRealm.UserHolder("changed".toCharArray(), user);
+        CustomCachingRealm.UserHolder holder = new CustomCachingRealm.UserHolder("changed".toCharArray(), first);
         realm.putInCache("john", holder);
 
         // try to authenticate again with the old password
-        user1 = realm.authenticate(token);
-        assertThat(user1, nullValue());
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, nullValue());
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate with new password
         token = new UsernamePasswordToken("john", new SecureString("changed".toCharArray()));
-        user1 = realm.authenticate(token);
-        assertThat(user1, sameInstance(user));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, sameInstance(first));
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // clear the cache
         if (randomBoolean()) {
@@ -83,14 +92,16 @@ public class CustomCachingRealmTests extends ESTestCase {
         }
 
         // authenticate with new password shouldn't work
-        user1 = realm.authenticate(token);
-        assertThat(user1, nullValue());
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, nullValue());
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate with correct password should work
         token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
-        user1 = realm.authenticate(token);
-        assertThat(user1, not(nullValue()));
-        assertThat(user1, not(sameInstance(user)));
-        assertThat(user1, equalTo(user));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, not(nullValue()));
+            assertThat(user, not(sameInstance(first)));
+            assertThat(user, equalTo(first));
+        }, e -> fail("Failed with exception: " + e.getMessage())));
     }
 }
