@@ -36,12 +36,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Unit tests for the CustomCachingRealm
  */
 public class CustomCachingRealmTests extends ESTestCase {
-
-    private User first = null;
 
     public void testAuthenticateWithCachedValue() {
         //setup
@@ -54,23 +54,24 @@ public class CustomCachingRealmTests extends ESTestCase {
         CustomCachingRealm realm = new CustomCachingRealm(new RealmConfig("test", realmSettings, globalSettings,
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
 
+        final AtomicReference<User> first = new AtomicReference<>();
+
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
         realm.authenticate(token, ActionListener.wrap(user -> {
             assertThat(user, notNullValue());
             assertThat(user.roles(), arrayContaining("user"));
             assertThat(user.principal(), equalTo("john"));
-            CustomCachingRealmTests.this.first = user;
+            first.set(user);
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate john again and we should be returned the same user object
-        User user1 = realm.authenticate(token);
         realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, sameInstance(first));
+            assertThat(user, sameInstance(first.get()));
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // modify the cache entry with a changed password
-        CustomCachingRealm.UserHolder holder = new CustomCachingRealm.UserHolder("changed".toCharArray(), first);
+        CustomCachingRealm.UserHolder holder = new CustomCachingRealm.UserHolder("changed".toCharArray(), first.get());
         realm.putInCache("john", holder);
 
         // try to authenticate again with the old password
@@ -81,7 +82,7 @@ public class CustomCachingRealmTests extends ESTestCase {
         // authenticate with new password
         token = new UsernamePasswordToken("john", new SecureString("changed".toCharArray()));
         realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, sameInstance(first));
+            assertThat(user, sameInstance(first.get()));
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // clear the cache
@@ -100,8 +101,8 @@ public class CustomCachingRealmTests extends ESTestCase {
         token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
         realm.authenticate(token, ActionListener.wrap(user -> {
             assertThat(user, not(nullValue()));
-            assertThat(user, not(sameInstance(first)));
-            assertThat(user, equalTo(first));
+            assertThat(user, not(sameInstance(first.get())));
+            assertThat(user, equalTo(first.get()));
         }, e -> fail("Failed with exception: " + e.getMessage())));
     }
 }

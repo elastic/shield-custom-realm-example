@@ -110,29 +110,41 @@ public class CustomRealm extends Realm{
     }
 
     /**
+     * @deprecated As of release 5.5, use {@link #authenticate(AuthenticationToken, ActionListener)}
+     *
      * Method that handles the actual authentication of the token. This method will only be called if the token is a
      * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
      * returned
      * @param authenticationToken the token to authenticate
      * @return {@link User} if authentication is successful, otherwise <code>null</code>
      */
+    @Deprecated
     @Override
     public User authenticate(AuthenticationToken authenticationToken) {
-        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
-        final String actualUser = token.principal();
-        final InfoHolder info = usersMap.get(actualUser);
-
-        if (info != null && token.credentials().equals(info.password)) {
-            return new User(actualUser, info.roles);
-        }
-        return null;
+        throw new UnsupportedOperationException("Deprecated");
     }
 
-    /* this is the provided implementation from org.elasticsearch.xpack.security.authc.Realm */
+    /**
+     * Method that handles the actual authentication of the token. This method will only be called if the token is a
+     * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
+     * returned as the argument to the {@code listener}'s {@link ActionListener#onResponse(Object)} method. Else
+     * {@code null} is returned.
+     * @param authenticationToken the token to authenticate
+     * @param listener return authentication result by calling {@link ActionListener#onResponse(Object)}
+     */
     @Override
-    public void authenticate(AuthenticationToken token, ActionListener<User> listener) {
+    public void authenticate(AuthenticationToken authenticationToken, ActionListener<User> listener) {
         try {
-            listener.onResponse(authenticate(token));
+            UsernamePasswordToken token = (UsernamePasswordToken)authenticationToken;
+            final String actualUser = token.principal();
+            final InfoHolder info = usersMap.get(actualUser);
+
+            if (info != null && token.credentials().equals(info.password)) {
+                listener.onResponse(new User(actualUser, info.roles));
+            }
+            else {
+                listener.onResponse(null);
+            }
         } catch (Exception e) {
             listener.onFailure(e);
         }
