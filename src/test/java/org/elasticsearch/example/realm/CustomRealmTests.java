@@ -24,7 +24,8 @@ import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
 
@@ -52,18 +53,20 @@ public class CustomRealmTests extends ESTestCase {
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
 
         // authenticate john
-        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecuredString(new char[] { 'd', 'o', 'e'}));
-        User user = realm.authenticate(token);
-        assertThat(user, notNullValue());
-        assertThat(user.roles(), arrayContaining("user"));
-        assertThat(user.principal(), equalTo("john"));
+        UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, notNullValue());
+            assertThat(user.roles(), arrayContaining("user"));
+            assertThat(user.principal(), equalTo("john"));
+        }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate jane
-        token = new UsernamePasswordToken("jane", new SecuredString(new char[] { 't', 'e', 's', 't'}));
-        user = realm.authenticate(token);
-        assertThat(user, notNullValue());
-        assertThat(user.roles(), arrayContaining("user", "admin"));
-        assertThat(user.principal(), equalTo("jane"));
+        token = new UsernamePasswordToken("jane", new SecureString(new char[] { 't', 'e', 's', 't'}));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, notNullValue());
+            assertThat(user.roles(), arrayContaining("user", "admin"));
+            assertThat(user.principal(), equalTo("jane"));
+        }, e -> fail("Failed with exception: " + e.getMessage())));
     }
 
     public void testAuthenticateBadUser() {
@@ -79,8 +82,10 @@ public class CustomRealmTests extends ESTestCase {
         CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
         UsernamePasswordToken token =
-                new UsernamePasswordToken("john1", new SecuredString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
-        User user = realm.authenticate(token);
-        assertThat(user, nullValue());
+                new UsernamePasswordToken("john1", new SecureString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
+        realm.authenticate(token, ActionListener.wrap(user -> {
+            assertThat(user, nullValue());
+        }, e -> fail("Failed with exception: " + e.getMessage())));
     }
+
 }

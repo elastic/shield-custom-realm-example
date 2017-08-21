@@ -19,11 +19,12 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.CachingRealm;
-import org.elasticsearch.xpack.security.authc.support.SecuredString;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,28 +51,50 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
     }
 
     /**
-     * Overridden authenticate method that first checks the cache. If the user is not in the cache, the super method
-     * is called and if a non-null value is returned, it is cached
+     * @deprecated As of release 5.5, use {@link #authenticate(AuthenticationToken, ActionListener)}
+     *
+     * Method that handles the actual authentication of the token. This method will only be called if the token is a
+     * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
+     * returned
      * @param authenticationToken the token to authenticate
      * @return {@link User} if authentication is successful, otherwise <code>null</code>
      */
+    @Deprecated
     @Override
     public User authenticate(AuthenticationToken authenticationToken) {
-        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
-        UserHolder userHolder = cache.get(token.principal());
-        // NOTE the null check for the password. This is done because a cache is shared between authentication and lookup
-        // lookup will not store the password...
-        if (userHolder == null || userHolder.password == null) {
-            User user = super.authenticate(token);
-            if (user != null) {
-                userHolder = new UserHolder(token.credentials().copyChars(), user);
-                cache.put(token.principal(), userHolder);
-                return user;
+        throw new UnsupportedOperationException("Deprecated");
+    }
+
+    /**
+     * Method that handles the actual authentication of the token. This method will only be called if the token is a
+     * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
+     * returned as the argument to the {@code listener}'s {@link ActionListener#onResponse(Object)} method. Else
+     * {@code null} is returned.
+     * @param authenticationToken the token to authenticate
+     * @param listener return authentication result by calling {@link ActionListener#onResponse(Object)}
+     */
+    @Override
+    public void authenticate(AuthenticationToken authenticationToken, ActionListener<User> listener) {
+        try {
+            UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
+            UserHolder userHolder = cache.get(token.principal());
+            // NOTE the null check for the password. This is done because a cache is shared between authentication and lookup
+            // lookup will not store the password...
+            if (userHolder == null || userHolder.password == null) {
+                super.authenticate(token, ActionListener.wrap(user -> {
+                    if (user != null) {
+                        cache.put(token.principal(), new UserHolder(token.credentials().clone().getChars(), user));
+                    }
+                    listener.onResponse(user);
+                }, listener::onFailure));
+            } else if (token.credentials().equals(new SecureString(userHolder.password))) {
+                listener.onResponse(userHolder.user);
+            } else {
+                listener.onResponse(null);
             }
-        } else if (SecuredString.constantTimeEquals(token.credentials().internalChars(), userHolder.password)) {
-            return userHolder.user;
+        } catch (Exception e) {
+            listener.onFailure(e);
         }
-        return null;
     }
 
     /**
