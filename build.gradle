@@ -21,7 +21,7 @@ import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 import org.elasticsearch.gradle.test.RestIntegTestTask
 
-version = '5.5.2'
+version = '5.6.0'
 
 buildscript {
   repositories {
@@ -32,7 +32,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.5.2"
+    classpath "org.elasticsearch.gradle:build-tools:5.6.0"
   }
 }
 
@@ -47,10 +47,14 @@ repositories {
   }
 }
 
+ext.projectSubstitutions = [:]
+project.licenseFile = project.rootProject.file("LICENSE.txt")
+project.noticeFile = project.rootProject.file("NOTICE.txt")
+
 dependencies {
   provided "org.elasticsearch:elasticsearch:${version}"
   provided "org.elasticsearch.plugin:x-pack-api:${version}"
-  provided "org.elasticsearch:jna:4.4.0"
+  provided "org.elasticsearch:jna:4.4.0-1"
 
   testCompile "org.elasticsearch.test:framework:${version}"
   testCompile "org.elasticsearch.client:x-pack-transport:${version}"
