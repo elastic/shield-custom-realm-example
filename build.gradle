@@ -21,7 +21,7 @@ import org.elasticsearch.gradle.MavenFilteringHack
 import org.elasticsearch.gradle.VersionProperties
 import org.elasticsearch.gradle.test.RestIntegTestTask
 
-version = '5.6.0'
+version = '6.0.0-beta2'
 
 buildscript {
   repositories {
@@ -32,7 +32,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:5.6.0"
+    classpath "org.elasticsearch.gradle:build-tools:6.0.0-beta2"
   }
 }
 
@@ -50,6 +50,10 @@ repositories {
 ext.projectSubstitutions = [:]
 project.licenseFile = project.rootProject.file("LICENSE.txt")
 project.noticeFile = project.rootProject.file("NOTICE.txt")
+
+configurations {
+  all*.exclude group: 'org.elasticsearch.plugin', module:'tribe'
+}
 
 dependencies {
   provided "org.elasticsearch:elasticsearch:${version}"

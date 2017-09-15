@@ -54,7 +54,9 @@ public class CustomRealmTests extends ESTestCase {
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
-        realm.authenticate(token, ActionListener.wrap(user -> {
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            User user = result.getUser();
             assertThat(user, notNullValue());
             assertThat(user.roles(), arrayContaining("user"));
             assertThat(user.principal(), equalTo("john"));
@@ -62,7 +64,9 @@ public class CustomRealmTests extends ESTestCase {
 
         // authenticate jane
         token = new UsernamePasswordToken("jane", new SecureString(new char[] { 't', 'e', 's', 't'}));
-        realm.authenticate(token, ActionListener.wrap(user -> {
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            User user = result.getUser();
             assertThat(user, notNullValue());
             assertThat(user.roles(), arrayContaining("user", "admin"));
             assertThat(user.principal(), equalTo("jane"));
@@ -83,8 +87,9 @@ public class CustomRealmTests extends ESTestCase {
                 new Environment(globalSettings), new ThreadContext(globalSettings)));
         UsernamePasswordToken token =
                 new UsernamePasswordToken("john1", new SecureString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
-        realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, nullValue());
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertFalse(result.isAuthenticated());
+            assertThat(result.getUser(), nullValue());
         }, e -> fail("Failed with exception: " + e.getMessage())));
     }
 

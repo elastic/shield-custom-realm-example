@@ -24,6 +24,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.xpack.security.authc.AuthenticationResult;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.authc.Realm;
@@ -62,7 +63,7 @@ public class CustomRealm extends Realm{
      * as the logger.
      * @param config the configuration specific to this realm
      */
-    public CustomRealm(RealmConfig config) {
+    CustomRealm(RealmConfig config) {
         super(TYPE, config);
         // load all user data into a map for easy access - NOT SECURE!
         this.usersMap = parseUsersMap(config.settings());
@@ -73,7 +74,7 @@ public class CustomRealm extends Realm{
      * @param type the type of the realm
      * @param config the configuration specific to this realm
      */
-    protected CustomRealm(String type, RealmConfig config) {
+    CustomRealm(String type, RealmConfig config) {
         super(TYPE, config);
         // load all user data into a map for easy access - NOT SECURE!
         this.usersMap = parseUsersMap(config.settings());
@@ -110,21 +111,6 @@ public class CustomRealm extends Realm{
     }
 
     /**
-     * @deprecated As of release 5.5, use {@link #authenticate(AuthenticationToken, ActionListener)}
-     *
-     * Method that handles the actual authentication of the token. This method will only be called if the token is a
-     * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
-     * returned
-     * @param authenticationToken the token to authenticate
-     * @return {@link User} if authentication is successful, otherwise <code>null</code>
-     */
-    @Deprecated
-    @Override
-    public User authenticate(AuthenticationToken authenticationToken) {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    /**
      * Method that handles the actual authentication of the token. This method will only be called if the token is a
      * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
      * returned as the argument to the {@code listener}'s {@link ActionListener#onResponse(Object)} method. Else
@@ -133,17 +119,17 @@ public class CustomRealm extends Realm{
      * @param listener return authentication result by calling {@link ActionListener#onResponse(Object)}
      */
     @Override
-    public void authenticate(AuthenticationToken authenticationToken, ActionListener<User> listener) {
+    public void authenticate(AuthenticationToken authenticationToken, ActionListener<AuthenticationResult> listener) {
         try {
             UsernamePasswordToken token = (UsernamePasswordToken)authenticationToken;
             final String actualUser = token.principal();
             final InfoHolder info = usersMap.get(actualUser);
 
             if (info != null && token.credentials().equals(info.password)) {
-                listener.onResponse(new User(actualUser, info.roles));
+                listener.onResponse(AuthenticationResult.success(new User(actualUser, info.roles)));
             }
             else {
-                listener.onResponse(null);
+                listener.onResponse(AuthenticationResult.notHandled());
             }
         } catch (Exception e) {
             listener.onFailure(e);
@@ -154,25 +140,16 @@ public class CustomRealm extends Realm{
      * This method looks for a user that is identified by the given String. No authentication is performed by this method.
      * If this realm does not support user lookup, then this method will not be called.
      * @param username the identifier for the user
-     * @return {@link User} if found, otherwise <code>null</code>
+     * @param listener used to return lookup result
      */
     @Override
-    public User lookupUser(String username) {
+    public void lookupUser(String username, ActionListener<User> listener) {
         InfoHolder info = usersMap.get(username);
         if (info != null) {
-            return new User(username, info.roles);
+            listener.onResponse(new User(username, info.roles));
+        } else {
+            listener.onResponse(null);
         }
-        return null;
-    }
-
-    /**
-     * This method indicates whether this realm supports user lookup or not. User lookup is used for the run as functionality
-     * found in X-Pack.
-     * @return true if lookup is supported, false otherwise
-     */
-    @Override
-    public boolean userLookupSupported() {
-        return true;
     }
 
     /**

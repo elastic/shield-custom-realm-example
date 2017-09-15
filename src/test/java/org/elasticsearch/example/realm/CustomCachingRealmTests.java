@@ -58,7 +58,9 @@ public class CustomCachingRealmTests extends ESTestCase {
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
-        realm.authenticate(token, ActionListener.wrap(user -> {
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            User user = result.getUser();
             assertThat(user, notNullValue());
             assertThat(user.roles(), arrayContaining("user"));
             assertThat(user.principal(), equalTo("john"));
@@ -66,8 +68,9 @@ public class CustomCachingRealmTests extends ESTestCase {
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate john again and we should be returned the same user object
-        realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, sameInstance(first.get()));
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            assertThat(result.getUser(), sameInstance(first.get()));
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // modify the cache entry with a changed password
@@ -75,14 +78,16 @@ public class CustomCachingRealmTests extends ESTestCase {
         realm.putInCache("john", holder);
 
         // try to authenticate again with the old password
-        realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, nullValue());
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertFalse(result.isAuthenticated());
+            assertThat(result.getUser(), nullValue());
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate with new password
         token = new UsernamePasswordToken("john", new SecureString("changed".toCharArray()));
-        realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, sameInstance(first.get()));
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            assertThat(result.getUser(), sameInstance(first.get()));
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // clear the cache
@@ -93,13 +98,16 @@ public class CustomCachingRealmTests extends ESTestCase {
         }
 
         // authenticate with new password shouldn't work
-        realm.authenticate(token, ActionListener.wrap(user -> {
-            assertThat(user, nullValue());
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertFalse(result.isAuthenticated());
+            assertThat(result.getUser(), nullValue());
         }, e -> fail("Failed with exception: " + e.getMessage())));
 
         // authenticate with correct password should work
         token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
-        realm.authenticate(token, ActionListener.wrap(user -> {
+        realm.authenticate(token, ActionListener.wrap(result -> {
+            assertTrue(result.isAuthenticated());
+            User user = result.getUser();
             assertThat(user, not(nullValue()));
             assertThat(user, not(sameInstance(first.get())));
             assertThat(user, equalTo(first.get()));

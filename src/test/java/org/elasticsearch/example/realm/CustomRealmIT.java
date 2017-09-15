@@ -34,6 +34,7 @@ import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.test.ESIntegTestCase;
@@ -161,7 +162,9 @@ public class CustomRealmIT extends ESIntegTestCase {
             if (token == XContentParser.Token.FIELD_NAME && parser.currentName().equals("settings")) {
                 parser.nextToken();
                 XContentBuilder builder = XContentBuilder.builder(parser.contentType().xContent());
-                settings = Settings.builder().loadFromSource(builder.copyCurrentStructure(parser).bytes().utf8ToString()).build();
+                settings = Settings.builder()
+                        .loadFromSource(builder.copyCurrentStructure(parser).bytes().utf8ToString(), XContentType.JSON)
+                        .build();
                 break;
             }
         }

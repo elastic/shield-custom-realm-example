@@ -21,6 +21,7 @@ package org.elasticsearch.example.realm;
 
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.common.settings.SecureString;
+import org.elasticsearch.xpack.security.authc.AuthenticationResult;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
@@ -51,21 +52,6 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
     }
 
     /**
-     * @deprecated As of release 5.5, use {@link #authenticate(AuthenticationToken, ActionListener)}
-     *
-     * Method that handles the actual authentication of the token. This method will only be called if the token is a
-     * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
-     * returned
-     * @param authenticationToken the token to authenticate
-     * @return {@link User} if authentication is successful, otherwise <code>null</code>
-     */
-    @Deprecated
-    @Override
-    public User authenticate(AuthenticationToken authenticationToken) {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    /**
      * Method that handles the actual authentication of the token. This method will only be called if the token is a
      * supported token. The method validates the credentials of the user and if they match, a {@link User} will be
      * returned as the argument to the {@code listener}'s {@link ActionListener#onResponse(Object)} method. Else
@@ -74,23 +60,24 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
      * @param listener return authentication result by calling {@link ActionListener#onResponse(Object)}
      */
     @Override
-    public void authenticate(AuthenticationToken authenticationToken, ActionListener<User> listener) {
+    public void authenticate(AuthenticationToken authenticationToken, ActionListener<AuthenticationResult> listener) {
         try {
             UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
             UserHolder userHolder = cache.get(token.principal());
             // NOTE the null check for the password. This is done because a cache is shared between authentication and lookup
             // lookup will not store the password...
             if (userHolder == null || userHolder.password == null) {
-                super.authenticate(token, ActionListener.wrap(user -> {
-                    if (user != null) {
-                        cache.put(token.principal(), new UserHolder(token.credentials().clone().getChars(), user));
+                super.authenticate(token, ActionListener.wrap(authenticationResult -> {
+                    if (authenticationResult.isAuthenticated()) {
+                        cache.put(token.principal(),
+                                new UserHolder(token.credentials().clone().getChars(), authenticationResult.getUser()));
                     }
-                    listener.onResponse(user);
+                    listener.onResponse(authenticationResult);
                 }, listener::onFailure));
             } else if (token.credentials().equals(new SecureString(userHolder.password))) {
-                listener.onResponse(userHolder.user);
+                listener.onResponse(AuthenticationResult.success(userHolder.user));
             } else {
-                listener.onResponse(null);
+                listener.onResponse(AuthenticationResult.notHandled());
             }
         } catch (Exception e) {
             listener.onFailure(e);
@@ -101,23 +88,24 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
      * Overridden method that will lookup a user from the cache first. If the user is not in the cache, then the super
      * method is called. A non-null result will be cached.
      * @param username the identifier for the user
-     * @return {@link User} if found, otherwise <code>null</code>
+     * @param listener used to return the user if one was looked or <code>null</code>
      */
     @Override
-    public User lookupUser(String username) {
+    public void lookupUser(String username, ActionListener<User> listener) {
         // a separate cache could be used for lookups to simplify the checking needed in the authenticate method but this
         // requires the lookup cache to also be cleared by the clear cache API
         UserHolder userHolder = cache.get(username);
         if (userHolder != null) {
-            return userHolder.user;
+            listener.onResponse(userHolder.user);
+        } else {
+            super.lookupUser(username, ActionListener.wrap(lookedUpUser -> {
+                if (lookedUpUser != null) {
+                    UserHolder holder = new UserHolder(null, lookedUpUser);
+                    cache.put(username, holder);
+                }
+                listener.onResponse(lookedUpUser);
+            }, listener::onFailure));
         }
-
-        User user = super.lookupUser(username);
-        if (user != null) {
-            userHolder = new UserHolder(null, user);
-            cache.put(username, userHolder);
-        }
-        return user;
     }
 
     /**
