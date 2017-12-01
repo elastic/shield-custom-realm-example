@@ -20,15 +20,15 @@
 package org.elasticsearch.example.realm;
 
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.common.cache.Cache;
+import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.settings.SecureString;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.xpack.security.authc.AuthenticationToken;
-import org.elasticsearch.xpack.security.user.User;
 import org.elasticsearch.xpack.security.authc.RealmConfig;
 import org.elasticsearch.xpack.security.authc.support.CachingRealm;
 import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.elasticsearch.xpack.security.user.User;
 
 /**
  * A custom implementation of a {@link CachingRealm} that shows what is necessary to integrate with the X-Pack cache
@@ -36,15 +36,16 @@ import java.util.concurrent.ConcurrentMap;
  * system, the cache may need to be expired. By implementing the {@link CachingRealm} interface, the X-Pack cache eviction
  * API can be used to clear a user or the entire cache.
  *
- * This class merely extends the existing {@link CustomRealm} and implements a cache on top of the realm with a regular
- * {@link ConcurrentMap}. An actual cache implementation will be required for features such as LRU and time based evictions
- * with a size limit.
+ * This class merely extends the existing {@link CustomRealm} and implements a cache on top of the realm using a
+ * {@link Cache}.
  */
 public class CustomCachingRealm extends CustomRealm implements CachingRealm {
 
     public static final String TYPE = "caching-custom";
 
-    private final ConcurrentMap<String, UserHolder> cache = new ConcurrentHashMap<>();
+    private final Cache<String, UserHolder> cache = CacheBuilder.<String, UserHolder>builder()
+            .setExpireAfterAccess(TimeValue.timeValueMinutes(30))
+            .build();
 
     public CustomCachingRealm(RealmConfig config) {
         super(TYPE, config);
@@ -126,7 +127,7 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
      */
     @Override
     public void expire(String username) {
-        cache.remove(username);
+        cache.invalidate(username);
     }
 
     /**
@@ -134,7 +135,7 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
      */
     @Override
     public void expireAll() {
-        cache.clear();
+        cache.invalidateAll();
     }
 
     // method for testing to validate caching behavior works

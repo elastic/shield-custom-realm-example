@@ -19,15 +19,17 @@
 
 package org.elasticsearch.example.realm;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.concurrent.ThreadContext;
 import org.elasticsearch.env.Environment;
-import org.elasticsearch.xpack.security.user.User;
-import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.common.settings.SecureString;
-import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.test.ESTestCase;
+import org.elasticsearch.xpack.security.authc.RealmConfig;
+import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
+import org.elasticsearch.xpack.security.user.User;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,8 +37,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Unit tests for the CustomCachingRealm
