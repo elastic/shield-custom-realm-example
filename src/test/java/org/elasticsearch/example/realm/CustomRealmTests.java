@@ -47,10 +47,10 @@ public class CustomRealmTests extends ESTestCase {
                 .put("users.john.password", "doe")
                 .put("users.john.roles", "user")
                 .put("users.jane.password", "test")
-                .putArray("users.jane.roles", "user", "admin")
+                .putList("users.jane.roles", "user", "admin")
                 .build();
         CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
-                new Environment(globalSettings), new ThreadContext(globalSettings)));
+                new Environment(globalSettings, createTempDir()), new ThreadContext(globalSettings)));
 
         // authenticate john
         UsernamePasswordToken token = new UsernamePasswordToken("john", new SecureString(new char[] { 'd', 'o', 'e'}));
@@ -80,11 +80,11 @@ public class CustomRealmTests extends ESTestCase {
                 .put("users.john.password", "doe")
                 .put("users.john.roles", "user")
                 .put("users.jane.password", "test")
-                .putArray("users.jane.roles", "user", "admin")
+                .putList("users.jane.roles", "user", "admin")
                 .build();
 
         CustomRealm realm = new CustomRealm(new RealmConfig("test", realmSettings, globalSettings,
-                new Environment(globalSettings), new ThreadContext(globalSettings)));
+                new Environment(globalSettings, createTempDir()), new ThreadContext(globalSettings)));
         UsernamePasswordToken token =
                 new UsernamePasswordToken("john1", new SecureString(randomAlphaOfLengthBetween(4, 16).toCharArray()));
         realm.authenticate(token, ActionListener.wrap(result -> {

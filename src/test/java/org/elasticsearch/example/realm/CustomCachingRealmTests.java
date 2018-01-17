@@ -52,7 +52,7 @@ public class CustomCachingRealmTests extends ESTestCase {
                 .put("users.john.roles", "user")
                 .build();
         CustomCachingRealm realm = new CustomCachingRealm(new RealmConfig("test", realmSettings, globalSettings,
-                new Environment(globalSettings), new ThreadContext(globalSettings)));
+                new Environment(globalSettings, createTempDir()), new ThreadContext(globalSettings)));
 
         final AtomicReference<User> first = new AtomicReference<>();
 

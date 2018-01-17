@@ -167,7 +167,7 @@ public class CustomRealm extends Realm{
             if (Strings.isEmpty(password)) {
                 throw new IllegalArgumentException("password must be specified for user [" + username + "]");
             }
-            usersMap.put(username, new InfoHolder(password, userSettings.getAsArray("roles")));
+            usersMap.put(username, new InfoHolder(password, userSettings.getAsList("roles").toArray(new String[] {})));
         }
         return Collections.unmodifiableMap(usersMap);
     }
