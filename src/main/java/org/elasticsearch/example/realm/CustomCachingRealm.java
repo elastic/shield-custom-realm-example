@@ -24,12 +24,12 @@ import org.elasticsearch.common.cache.Cache;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.xpack.security.authc.AuthenticationResult;
-import org.elasticsearch.xpack.security.authc.AuthenticationToken;
-import org.elasticsearch.xpack.security.authc.RealmConfig;
-import org.elasticsearch.xpack.security.authc.support.CachingRealm;
-import org.elasticsearch.xpack.security.authc.support.UsernamePasswordToken;
-import org.elasticsearch.xpack.security.user.User;
+import org.elasticsearch.xpack.core.security.authc.AuthenticationResult;
+import org.elasticsearch.xpack.core.security.authc.AuthenticationToken;
+import org.elasticsearch.xpack.core.security.authc.RealmConfig;
+//TODO import org.elasticsearch.xpack.core.security.authc.support.CachingRealm;
+import org.elasticsearch.xpack.core.security.authc.support.UsernamePasswordToken;
+import org.elasticsearch.xpack.core.security.user.User;
 
 /**
  * A custom implementation of a {@link CachingRealm} that shows what is necessary to integrate with the X-Pack cache
@@ -40,7 +40,7 @@ import org.elasticsearch.xpack.security.user.User;
  * This class merely extends the existing {@link CustomRealm} and implements a cache on top of the realm using a
  * {@link Cache}.
  */
-public class CustomCachingRealm extends CustomRealm implements CachingRealm {
+public class CustomCachingRealm extends CustomRealm { //TODO implements CachingRealm {
 
     public static final String TYPE = "caching-custom";
 
@@ -113,7 +113,7 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
      * Removes the entry from the cache identified by the username
      * @param username the identifier for the user to remove
      */
-    @Override
+    //TODO @Override
     public void expire(String username) {
         cache.invalidate(username);
     }
@@ -121,7 +121,7 @@ public class CustomCachingRealm extends CustomRealm implements CachingRealm {
     /**
      * Clears all entries from the cache
      */
-    @Override
+    //TODO @Override
     public void expireAll() {
         cache.invalidateAll();
     }
