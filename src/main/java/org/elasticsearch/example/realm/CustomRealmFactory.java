@@ -19,8 +19,8 @@
 
 package org.elasticsearch.example.realm;
 
-import org.elasticsearch.xpack.security.authc.Realm;
-import org.elasticsearch.xpack.security.authc.RealmConfig;
+import org.elasticsearch.xpack.core.security.authc.Realm;
+import org.elasticsearch.xpack.core.security.authc.RealmConfig;
 
 /**
  * The factory class for the {@link CustomRealm}. This factory class is responsible for properly constructing the realm

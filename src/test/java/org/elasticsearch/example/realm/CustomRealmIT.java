@@ -39,7 +39,7 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
-import org.elasticsearch.xpack.XPackPlugin;
+import org.elasticsearch.xpack.core.XPackPlugin;
 
 import java.util.Collection;
 import java.util.Collections;
