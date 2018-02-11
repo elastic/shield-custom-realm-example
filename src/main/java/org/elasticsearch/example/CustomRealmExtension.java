@@ -26,9 +26,9 @@ import org.elasticsearch.example.realm.CustomCachingRealmFactory;
 import org.elasticsearch.example.realm.CustomRealm;
 import org.elasticsearch.example.realm.CustomRealmFactory;
 import org.elasticsearch.watcher.ResourceWatcherService;
-import org.elasticsearch.xpack.extensions.XPackExtension;
-import org.elasticsearch.xpack.security.authc.AuthenticationFailureHandler;
-import org.elasticsearch.xpack.security.authc.Realm.Factory;
+import org.elasticsearch.xpack.core.extensions.XPackExtension;
+import org.elasticsearch.xpack.core.security.authc.AuthenticationFailureHandler;
+import org.elasticsearch.xpack.core.security.authc.Realm.Factory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,9 +77,9 @@ public class CustomRealmExtension extends XPackExtension {
 
     /**
      * Returns the custom authentication failure handler. Note only one implementation and instance of a failure handler can
-     * exist. There is a default implementation, {@link org.elasticsearch.xpack.security.authc.DefaultAuthenticationFailureHandler} that
-     * can be extended where appropriate. If no changes are needed to the default implementation, then there is no need to override this
-     * method.
+     * exist. There is a default implementation, {@link org.elasticsearch.xpack.core.security.authc.DefaultAuthenticationFailureHandler}
+     * that can be extended where appropriate. If no changes are needed to the default implementation, then there is no need to override
+     * this method.
      */
     @Override
     public AuthenticationFailureHandler getAuthenticationFailureHandler() {
