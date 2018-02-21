@@ -27,7 +27,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.xpack.core.security.authc.AuthenticationResult;
 import org.elasticsearch.xpack.core.security.authc.AuthenticationToken;
 import org.elasticsearch.xpack.core.security.authc.RealmConfig;
-//TODO import org.elasticsearch.xpack.core.security.authc.support.CachingRealm;
+import org.elasticsearch.xpack.core.security.authc.support.CachingRealm;
 import org.elasticsearch.xpack.core.security.authc.support.UsernamePasswordToken;
 import org.elasticsearch.xpack.core.security.user.User;
 
@@ -40,7 +40,7 @@ import org.elasticsearch.xpack.core.security.user.User;
  * This class merely extends the existing {@link CustomRealm} and implements a cache on top of the realm using a
  * {@link Cache}.
  */
-public class CustomCachingRealm extends CustomRealm { //TODO implements CachingRealm {
+public class CustomCachingRealm extends CustomRealm implements CachingRealm {
 
     public static final String TYPE = "caching-custom";
 
@@ -113,7 +113,7 @@ public class CustomCachingRealm extends CustomRealm { //TODO implements CachingR
      * Removes the entry from the cache identified by the username
      * @param username the identifier for the user to remove
      */
-    //TODO @Override
+    @Override
     public void expire(String username) {
         cache.invalidate(username);
     }
@@ -121,7 +121,7 @@ public class CustomCachingRealm extends CustomRealm { //TODO implements CachingR
     /**
      * Clears all entries from the cache
      */
-    //TODO @Override
+    @Override
     public void expireAll() {
         cache.invalidateAll();
     }
