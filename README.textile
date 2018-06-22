@@ -1,14 +1,26 @@
-h1. Example of Custom Realm Extension for X-Pack
+h1. Custom Realm Extension for X-Pack
 
-h2. Introduction
+h2. Open X-Pack
 
-p. This project contains an example "custom realm":https://www.elastic.co/guide/en/x-pack/current/custom-realms.html extension for X-Pack.
-This is the follow-on to the custom realm plugin for Shield; examples of that can still be found in the other branches.
+We have "opened X-Pack":https://www.elastic.co/products/x-pack/open which gives you access to the source code for the X-Pack SecurityExtension feature, and also our test cases for that.
 
-p. Please make sure to use the correct branch of this repository that corresponds to the version of elasticsearch that you are developing the extension for.
+Those test cases are maintained on an ongoing basis, and will always match the latest state of the X-Pack code. As such, we are no longer maintaining this sample realm repository. If you wish to see an example realm, you can see a working, maintained "example in the Elasticsearch repository":https://github.com/elastic/elasticsearch/tree/master/x-pack/qa/security-example-spi-extension
+
+h2. Elasticsearch Versions and Branches
+
+The "master" branch of the Elasticsearch git repository tracks the most recent deveopment, including unreleased features and changes. The security extension example from @master@ is unlikely to work on any released version of Elasticsearch.
+
+It is important that you browse to the correct version/branch for the version of Elasticsearch that you are running.
+
+* "6.3.0":https://github.com/elastic/elasticsearch/tree/v6.3.0/x-pack/qa/security-example-spi-extension
+* "6.2.x":https://github.com/elastic/elasticsearch/tree/cc2dcf51c82b26e26ced56379d3c48a74275f4ed/qa/security-example-extension
+
+h2. Older versions of Elasticsearch
+
+This repository contains versions of the custom realm extension that work with Elasticsearch releases from as far back as 2.0
 
 |_. Branch |_.  Elasticsearch Version   |
-| "master":https://github.com/elastic/shield-custom-realm-example                          | 6.0.x  |
+| "6.2":https://github.com/elastic/shield-custom-realm-example/tree/6.2                    | 6.2.x  |
 | "6.0":https://github.com/elastic/shield-custom-realm-example/tree/6.0                    | 6.0.x  |
 | "5.6":https://github.com/elastic/shield-custom-realm-example/tree/5.6                    | 5.6.x  |
 | "5.5":https://github.com/elastic/shield-custom-realm-example/tree/5.5                    | 5.5.x  |
@@ -25,46 +37,11 @@ p. Please make sure to use the correct branch of this repository that correspond
 
 h2. Creating an X-Pack Extension
 
-p. An X-Pack extension is packaged as a zip file consisting of jar files and a descriptor file named @x-pack-extension-descriptor.properties@. The extension is written in Java. This example uses Gradle to build the extension that implements a custom realm. *IMPORTANT*: For versions prior to 5.4, Gradle 2.13 must be used as there are some features of the build that are no longer compatible with newer versions; for 5.4 and newer Gradle 3.3 or newer must be used. As of version 6.2, the gradle wrapper is used.
+For versions prior to 6.3 please follow the instructions in the @README.textile@ file on the correct branch of this repository (see table above).
 
-p. In most cases, taking this project and modifying the structure will allow you to start developing your own custom realm for X-Pack quickly.
-
-h2. Building and Testing the Plugin
-
-p. Checkout the branch that matches the latest version of X-Pack and run @./gradlew clean check@. This will compile the extension, run unit tests, package the extension, download Elasticsearch and X-Pack, install the extension, and run tests against an instance of Elasticsearch. The resulting artifacts will be located in the @build/distribution@ directory.
-
-h3. Example Configuration
-
-p. In the @elasticsearch.yml@ file you will define a realm as specified in the X-Pack documentation. An example of this configuration would be:
-
-bc.. xpack.security:
-  authc:
-    realms:
-      custom:
-        type: custom
-        order: 0
-        users:
-          john:
-            password: changeme
-            roles: user,marvel_user
-          jane:
-            password: changeme
-            roles: admin
-      file:
-        type: file
-        order: 1
-
-p. In this example, a @custom@ realm is configured alongside a @file@ realm. The users for the custom realm are specified in the configuration along with their roles and passwords. Please note that the definition of users and roles in the configuration file is not secure and is only used to provide an easy to understand example of a custom realm.
-
-p. Custom realms can be dynamic in that users and user to role mappings do not need to be static; the custom realm needs to be able to:
-
-# Extract a token from the ThreadContext
-# Authenticate a user based on the credentials in the token
-# Provide the names of the roles that the user is assigned to
-
-h2. Integration Points with X-Pack
-
-p. This project shows an example of and documents the two integrations points with X-Pack. These are the ability to define one or more custom realms and the ability to define a single custom authentication failure handler to control the challenges sent to the user as part of the authentication process. These classes have code comments documenting their functionality.
+For versions 6.3.0 and later, Security Extensions have changed and can be loaded using standard Elasticsearch plugin mechanisms.
+Please read Elasticsearch's "plugin author instructions":https://www.elastic.co/guide/en/elasticsearch/plugins/current/plugin-authors.html
+In order to registry your @SecurityExtension@ with X-Pack, it must be included in the @resources/META-INF/services/org.elasticsearch.xpack.core.security.SecurityExtension@ file of your main jar file, as per the "example project":https://github.com/elastic/elasticsearch/blob/v6.3.0/x-pack/qa/security-example-spi-extension/src/main/resources/META-INF/services/org.elasticsearch.xpack.core.security.SecurityExtension
 
 h2. Questions
 
