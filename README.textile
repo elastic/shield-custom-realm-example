@@ -6,6 +6,8 @@ We have "opened X-Pack":https://www.elastic.co/products/x-pack/open which gives 
 
 Those test cases are maintained on an ongoing basis, and will always match the latest state of the X-Pack code. As such, we are no longer maintaining this sample realm repository. If you wish to see an example realm, you can see a working, maintained "example in the Elasticsearch repository":https://github.com/elastic/elasticsearch/tree/master/x-pack/qa/security-example-spi-extension
 
+The blog post "How to Develop Your Own Security Extensions and Custom Realms for Elasticsearch":https://www.elastic.co/blog/how-to-develop-your-own-security-extensions-and-custom-realms-for-elasticsearch also provides an example for implementing a custom realm in Elasticsearch 6.3 or above, with commentary to assist.
+
 h2. Elasticsearch Versions and Branches
 
 The "master" branch of the Elasticsearch git repository tracks the most recent deveopment, including unreleased features and changes. The security extension example from @master@ is unlikely to work on any released version of Elasticsearch.
